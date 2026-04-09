@@ -7,17 +7,17 @@
 ![LangChain](https://img.shields.io/badge/LangChain-AI-green.svg)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-black.svg)
 
-### 1. Introducción
+## 1. Introducción
 Este repositorio contiene el desarrollo de una solución integral basada en agentes LLM y pipelines RAG, aplicada al sector de retail en Chile. El proyecto busca optimizar la gestión de stock para mejorar la experiencia de usuario en plataformas de pedidos digitales.
 
-### 2. Identificación del Problema
+## 2. Identificación del Problema
 En cadenas como Unimarc o Santa Isabel, existe una desincronización crítica entre el stock físico de bodega y lo que el cliente ve en la aplicación.
 
 - **Desafío:** Los productos aparecen disponibles en la app, pero están agotados en la góndola real.
 - **Impacto:** Pérdida de ventas, frustración del cliente y ineficiencia en el trabajo de los repartidores.
 - **Causa:** Falta de un puente de información en tiempo real que procese datos de inventario y los traduzca a disponibilidad digital.
 
-### 3. Solución con IA
+## 3. Solución con IA
 Se propone un Agente Inteligente de Gestión de Existencias que utiliza:
 
 
@@ -26,7 +26,7 @@ Se propone un Agente Inteligente de Gestión de Existencias que utiliza:
 - **Prompts Optimizados:** Diseñados para actuar como un gestor de tienda experto, ajustando el contenido según el requerimiento organizacional
 
 
-### 4. Clonar repositorio
+## 4. Clonar repositorio
 
 ```bash
 # 1. Clonar tu repositorio en la terminal de VS Code
@@ -35,7 +35,7 @@ git clone https://github.com/TU-USUARIO/Parcial1_Ingenier-a_de_Soluciones_con_In
 cd Parcial1_Ingenier-a_de_Soluciones_con_Inteligencia_Artificial-
 ```
 
-### 5. Crear Entorno Virtual
+## 5. Crear Entorno Virtual
 
 ```bash
 # Crear entorno virtual
@@ -48,14 +48,14 @@ source .venv/bin/activate
 .venv\Scripts\activate
 ```
 
-### 6. Instalar Dependencias
+## 6. Instalar Dependencias
 
 ```bash
 #  Necesario tener archivo de requirements.txt incluido en la carpeta
 pip install -r requirements.txt
 ```
 
-### 7. Configurar Variables de Entorno
+## 7. Configurar Variables de Entorno
 
 ```bash
 # Copiar el archivo de ejemplo
