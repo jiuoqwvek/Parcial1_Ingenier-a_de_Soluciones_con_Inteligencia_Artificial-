@@ -204,6 +204,40 @@ while True:
     if user_input.strip():
         ejecutar_chat(user_input, id_actual)
 ```
+## 9. Solución de Problemas Comunes (Troubleshooting)
 
+Al trabajar con APIs de Inteligencia Artificial y entornos virtuales, es posible que te encuentres con algunos errores comunes. Aquí detallamos cómo solucionarlos rápidamente:
+
+### 1. Error de Autenticación o Variables de Entorno no encontradas
+**Síntoma en terminal:** `KeyError: 'OPENAI_BASE_URL'` o `AuthenticationError: Incorrect API key provided`.
+* **Causa:** El script no está encontrando tus credenciales.
+* **Solución:** 1. Verifica que tu archivo de credenciales se llame exactamente `.env` (sin extensiones ocultas como `.env.txt`).
+  2. Asegúrate de que el archivo `.env` esté en la misma carpeta desde donde estás ejecutando el script.
+  3. Revisa que no haya espacios extra alrededor del signo `=` en tu archivo `.env` (ej: `GITHUB_TOKEN="tu_token"`).
+
+### 2. Error de Librería o Módulo no encontrado
+**Síntoma en terminal:** `ModuleNotFoundError: No module named 'langchain_openai'` o similares.
+* **Causa:** Las dependencias no están instaladas en el entorno actual.
+* **Solución:** 1. Verifica que tu entorno virtual esté activado (deberías ver `(.venv)` al inicio de la línea de tu terminal).
+  2. Vuelve a instalar las dependencias ejecutando: 
+     ```bash
+     pip install -r requirements.txt
+     ```
+  3. Si el error persiste específicamente con LangChain, fuerza la instalación manual: `pip install langchain langchain-openai langchain-core`.
+
+### 3. Límite de Tasa (Rate Limit) o Créditos Agotados
+**Síntoma en terminal:** `RateLimitError: Error code: 429` o la terminal se queda "pensando" indefinidamente y lanza un error de *Timeout*.
+* **Causa:** Estás haciendo demasiadas peticiones por minuto a la API o te has quedado sin saldo/cuota en tu token de GitHub Models/OpenAI.
+* **Solución:** 1. Espera unos minutos antes de volver a consultar el chat.
+  2. Revisa el panel de tu proveedor de API para confirmar si tienes cuota disponible en el modelo `gpt-4o`.
+
+### 4. El Streaming se ve desordenado o no imprime bien los caracteres
+**Síntoma en terminal:** Las palabras aparecen amontonadas o con símbolos extraños como `\n` impresos literalmente.
+* **Causa:** Incompatibilidad de codificación (Encoding) en ciertas terminales (muy común en el CMD antiguo de Windows).
+* **Solución:** 1. Te recomendamos usar terminales modernas como **Windows Terminal**, **Git Bash** o la terminal integrada de **VS Code**.
+  2. Si estás en Windows, puedes forzar la codificación UTF-8 ejecutando este comando en la consola antes de iniciar Python:
+     ```cmd
+     chcp 65001
+     ```
 
         
