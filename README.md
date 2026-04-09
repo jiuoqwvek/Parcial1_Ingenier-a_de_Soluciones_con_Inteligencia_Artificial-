@@ -74,46 +74,41 @@ LANGSMITH_API_KEY="tu_langsmith_api_key_aqui"
 LANGSMITH_PROJECT="ingenieria_soluciones_con_ia"
 ```
 
-## 8. Configuración Avanzada: Memoria de Resumen y Streaming
+## 8. Configuración Avanzada: Memoria Dinámica, Sesiones y Streaming
 
-Para que la experiencia del usuario sea óptima, hemos configurado nuestro Agente con dos capacidades clave utilizando la API de OpenAI y LangChain:
+Para asegurar que la experiencia sea fluida y el consumo de tokens sea eficiente, implementamos una arquitectura moderna utilizando **LCEL (LangChain Expression Language)**. Esta configuración permite:
 
-1. **Streaming (Tiempo real):** Las respuestas se generan palabra por palabra, eliminando los tiempos de espera largos.
-2. **ConversationSummaryBufferMemory:** Una memoria avanzada que resume el historial antiguo de la conversación (para ahorrar tokens y no perder el contexto general) y mantiene intactos los últimos mensajes (para que la IA no se pierda en el tema inmediato).
+1. **Gestión de múltiples sesiones:** Capacidad de manejar diferentes chats simultáneos (`session_id`).
+2. **Resumen Inteligente de Contexto:** Una función personalizada que monitorea el historial. Si este supera los 6 mensajes, un LLM resume la conversación antigua y mantiene intactos los 2 últimos mensajes para no perder el hilo inmediato.
+3. **Streaming Manual:** Las respuestas se iteran y se imprimen en consola en tiempo real (token a token).
 
-### Implementación en el Código
+### Implementación Paso a Paso
 
-En el archivo principal (`solucion_unimarc.ipynb`), la configuración se realiza de la siguiente manera:
+A continuación, se detalla el script principal que levanta el asistente de inventario en la terminal.
+
+#### 1. Importación y Configuración del Modelo
+Utilizamos `ChatOpenAI` configurado con `streaming=True` para permitir la respuesta en tiempo real.
 
 ```python
 import os
+import time
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationSummaryBufferMemory
-from langchain.chains import ConversationChain
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
-# 1. Configuramos el motor de la IA con Streaming activado
+# Cargar variables de entorno
+load_dotenv()
+
+# Configurar el modelo de lenguaje y la sesión de chat
 llm = ChatOpenAI(
-    base_url=os.environ.get("OPENAI_BASE_URL"),
-    api_key=os.environ.get("GITHUB_TOKEN"),
+    base_url=os.environ["OPENAI_BASE_URL"],
+    api_key=os.environ["GITHUB_TOKEN"],
     model="gpt-4o",
-    streaming=True, # Permite ver la respuesta palabra por palabra
-    callbacks=[StreamingStdOutCallbackHandler()],
-    temperature=0.2 # Temperatura baja para mantener precisión en datos de stock
-)
-
-# 2. Inicializamos la Memoria Avanzada (Resumen + Buffer reciente)
-# max_token_limit controla la ventana de mensajes literales. 
-# Si se supera, los mensajes más antiguos se comprimen en un resumen.
-memoria_avanzada = ConversationSummaryBufferMemory(
-    llm=llm, 
-    max_token_limit=300, 
-    return_messages=True
-)
-
-# 3. Creamos la Cadena de Conversación
-agente_unimarc = ConversationChain(
-    llm=llm,
-    memory=memoria_avanzada,
-    verbose=False
+    temperature=0.7,
+    streaming=True,
+    max_tokens=4096,
+    top_p=1
 )
