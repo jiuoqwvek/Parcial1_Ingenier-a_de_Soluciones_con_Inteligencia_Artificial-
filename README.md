@@ -2,11 +2,6 @@
 
 ---
 
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![Jupyter Notebook](https://img.shields.io/badge/Jupyter-Notebook-orange.svg)
-![LangChain](https://img.shields.io/badge/LangChain-AI-green.svg)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-black.svg)
-
 ## 1. Introducción
 Este repositorio contiene el desarrollo de una solución integral basada en agentes LLM y pipelines RAG, aplicada al sector de retail en Chile. El proyecto busca optimizar la gestión de stock para mejorar la experiencia de usuario en plataformas de pedidos digitales.
 
