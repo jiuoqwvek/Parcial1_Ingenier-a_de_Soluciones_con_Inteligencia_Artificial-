@@ -112,6 +112,7 @@ llm = ChatOpenAI(
     max_tokens=4096,
     top_p=1
 )
+```
 
 #### 2. Gestión del Historial y Lógica de Resumen
 Creamos un diccionario para almacenar las sesiones y una función que previene el desbordamiento de tokens resumiendo los mensajes más antiguos.
@@ -149,5 +150,60 @@ def sincronizar_contexto_stock(sesion_id: str, max_mensajes=6):
         # Inyectamos el resumen y volvemos a colocar los mensajes recientes
         historial.add_ai_message(f"[RESUMEN]: {summary}")
         historial.messages.extend(recent_messages)
+```
+#### 3. Prompts y Cadena de Ejecución (LCEL)
+Definimos la personalidad del Asistente de Unimarc y vinculamos el prompt con el historial utilizando `RunnableWithMessageHistory`.
+
+```python
+# Crear el prompt del sistema
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "Eres un asistente de Inventario de Unimarc. Ayudas a los usuarios a gestionar su inventario, responder preguntas sobre productos, y proporcionar información relevante sobre el stock y las operaciones de la tienda. Tienes que ser amigable, eficiente y siempre estar dispuesto a ayudar. Si no sabes la respuesta a una pregunta, es mejor admitirlo que inventar una respuesta incorrecta. Siempre debes mantener un tono profesional y cortés en tus respuestas. Las respuestas deben ser breves y al punto, evitando información innecesaria. Si el usuario hace una pregunta que no está relacionada con el inventario o las operaciones de la tienda, debes redirigir la conversación de vuelta a temas relevantes para Unimarc. Recuerda que tu objetivo principal es ayudar a los usuarios a gestionar su inventario de manera efectiva y proporcionar información precisa sobre los productos y operaciones de la tienda."),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{input}")
+])
+
+# Enlazar la cadena con el historial
+conversation = RunnableWithMessageHistory(
+    prompt | llm,
+    historial_de_conversacion,
+    input_messages_key="input",
+    history_messages_key="chat_history"
+)
+```
+#### 4. Motor de Streaming y Terminal de Usuario
+Finalmente, creamos la interfaz de terminal interactiva que ejecuta el ciclo de chat, procesando los *chunks* de texto a medida que llegan.
+
+```python
+# Función para ejecutar la respuesta en Streaming
+def ejecutar_chat(input_text, session_id):
+    sincronizar_contexto_stock(session_id) # Verificamos si hay que resumir
+    
+    config = {"configurable": {"session_id": session_id}}
+    print(f"[OUTPUT]: ", end="", flush=True)
+    
+    try:
+        # Generar respuesta token a token
+        for chunk in conversation.stream({"input": input_text}, config=config):
+            print(chunk.content, end="", flush=True)
+        print("\n")
+    except Exception as e:
+        print(f"\n[ERROR_LOG]: {e}")
+
+# Simulación de la Terminal de Gestión
+id_actual = "SYS-LOG-01"
+print(f"TERMINAL DE GESTIÓN UNIMARC | SESIÓN: {id_actual}")
+print("-" * 50)
+
+while True:
+    user_input = input("[INPUT]: ")
+    
+    if user_input.lower() in ["exit", "quit", "salir"]:
+        print("[SISTEMA]: Sesión finalizada.")
+        break
+    
+    if user_input.strip():
+        ejecutar_chat(user_input, id_actual)
+```
+
 
         
