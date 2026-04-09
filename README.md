@@ -112,3 +112,42 @@ llm = ChatOpenAI(
     max_tokens=4096,
     top_p=1
 )
+
+#### 2. Gestión del Historial y Lógica de Resumen
+Creamos un diccionario para almacenar las sesiones y una función que previene el desbordamiento de tokens resumiendo los mensajes más antiguos.
+
+```python
+# Estructura para almacenar el historial de conversaciones por sesión
+sesion_unimarc = {}
+
+def historial_de_conversacion(sesion_id: str):
+    if sesion_id not in sesion_unimarc:
+        sesion_unimarc[sesion_id] = InMemoryChatMessageHistory()
+    return sesion_unimarc[sesion_id]
+
+# Función para sincronizar el contexto del historial (Resumen Dinámico)
+def sincronizar_contexto_stock(sesion_id: str, max_mensajes=6):
+    historial = historial_de_conversacion(sesion_id)
+
+    # Si hay más de 6 mensajes, resumimos los más antiguos
+    if len(historial.messages) > max_mensajes:
+        mensajes_a_resumir = historial.messages[:-2] # Tomamos todos menos los 2 últimos
+        
+        conversation_text = ""
+        for msj in mensajes_a_resumir:
+            role = "Usuario" if msj.type == "human" else "Asistente"
+            conversation_text += f"{role}: {msj.content}\n"
+        
+        # Pedimos al LLM que resuma
+        summary_response = llm.invoke(f"Resume esta conversación de inventario en 2 líneas:\n{conversation_text}")
+        summary = summary_response.content
+        
+        # Guardamos los 2 últimos mensajes para mantener la vigencia
+        recent_messages = historial.messages[-2:]
+        historial.clear()
+        
+        # Inyectamos el resumen y volvemos a colocar los mensajes recientes
+        historial.add_ai_message(f"[RESUMEN]: {summary}")
+        historial.messages.extend(recent_messages)
+
+        
