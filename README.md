@@ -95,102 +95,116 @@ Para asegurar que la experiencia sea fluida y el consumo de tokens sea eficiente
 A continuación, se detalla el script principal que levanta el asistente de inventario en la terminal.
 
 #### 1. Importación y Configuración del Modelo
-Utilizamos `ChatOpenAI` configurado con `streaming=True` para permitir la respuesta en tiempo real.
+En esta sección se cargan las dependencias de LangChain y se configuran dos instancias de GPT-4.1:
 
+* **LLM de Interacción (llm):** Configurado con `streaming=True` y temperatura 0.3. Proporciona respuestas fluidas en tiempo real con precisión técnica.
+* **LLM de Utilidad (llm_util):** Configurado con `temperature=0` y sin streaming. Actúa como motor determinista para la extracción de JSON y resúmenes, garantizando datos exactos.
+
+Las credenciales y URLs base se gestionan de forma segura mediante un archivo `.env` y la librería `python-dotenv`.
 ```python
 import os
-import time
+import re
+import json
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
+from langchain_core.messages import HumanMessage
+from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-# #1. Cargar variables de entorno
-# Carga las credenciales y configuraciones desde el archivo .env para proteger datos sensibles
+# #1. CARGAR CONFIGURACIÓN DESDE EL .ENV
 load_dotenv()
 
-# #2. Configurar el modelo de lenguaje y la sesión de chat openai
-# Se inicializa el modelo GPT-4o a través de la interfaz de ChatOpenAI
+MODEL_ID = "gpt-4.1"
+
+# #2. CONFIGURACIÓN DE LOS MODELOS (LLM)
+# Se configuran usando las llaves exactas de tu archivo .env
+
+# LLM para la conversación (con Streaming)
 llm = ChatOpenAI(
-    # Punto de enlace de la API (en este caso usando el proxy de GitHub Models)
-    base_url=os.environ["OPENAI_BASE_URL"],
-
-    # Token de autenticación obtenido de las variables de entorno
-    api_key=os.environ["GITHUB_TOKEN"],
-
-    # Modelo de última generación seleccionado para el procesamiento de lenguaje natural
-    model="gpt-4o",
-
-    # Grado de creatividad (0.7 permite respuestas fluidas y naturales sin perder coherencia)
-    temperature=0.7,
-
-    # Habilitación de streaming para recibir la respuesta fragmento a fragmento en tiempo real
+    base_url=os.environ.get("OPENAI_BASE_URL"),
+    api_key=os.environ.get("GITHUB_TOKEN"),
+    model=MODEL_ID,
+    temperature=0.3,
     streaming=True,
-
-    # Límite máximo de tokens para la generación de la respuesta
-    max_tokens=4096,
-    
-    # Configuración de muestreo por núcleo para mayor estabilidad en la calidad de salida
-    top_p=1
+    max_tokens=300
 )
+
+# LLM para procesos de extracción y resumen (Determinista)
+llm_util = ChatOpenAI(
+    base_url=os.environ.get("OPENAI_BASE_URL"),
+    api_key=os.environ.get("GITHUB_TOKEN"),
+    model=MODEL_ID,
+    temperature=0,
+    streaming=False
+)
+
 ```
 
-#### 2. Gestión del Historial y Lógica de Resumen
-Creamos un diccionario para almacenar las sesiones y una función que previene el desbordamiento de tokens resumiendo los mensajes más antiguos.
+#### 2. Gestión del Historial y Extracción de Datos
 
+En esta parte el código se encarga de la memoria del chat y de transformar las palabras del usuario en datos estructurados:
+
+* **Historial por sesión:** Se utiliza un diccionario para almacenar la conversación de cada usuario de forma independiente en la memoria RAM, permitiendo que el asistente mantenga el contexto de la charla.
+* **Extracción de Inventario (`extraer_datos_inventario`):** Esta función analiza el mensaje del usuario buscando productos y cantidades. Si encuentra datos, los convierte automáticamente a un formato JSON limpio para su uso posterior en bases de datos.
+* **Sincronización de contexto:** El sistema incluye una lógica de resumen que se activa al superar los 6 mensajes. Esto comprime el historial antiguo para ahorrar tokens, pero bajo una "regla de oro": nunca omitir códigos de productos, nombres ni stock, manteniendo siempre la información crítica a mano.
+
+El proceso asegura que el asistente no "olvide" los productos mencionados y que la información técnica se mantenga siempre precisa.
 ```python
-# #3. Crear una estructura para almacenar el historial de conversaciones por sesión
-# Se utiliza un diccionario para persistir la memoria de diferentes usuarios en la RAM del servidor
+# #3. ESTRUCTURA PARA EL HISTORIAL
 sesion_unimarc = {}
 
 def historial_de_conversacion(sesion_id : str):
-    # Si el ID de sesión no existe, se crea una nueva instancia de historial en memoria
     if sesion_id not in sesion_unimarc:
         sesion_unimarc[sesion_id] = InMemoryChatMessageHistory()
     return sesion_unimarc[sesion_id]
 
-# #4. Función para sincronizar el contexto del historial de conversación, resumiendo si es necesario(VERSIÓN OPTIMIZADA)
-def sincronizar_contexto_stock(sesion_id: str, max_mensajes=6):
+# #4. FUNCIÓN PARA EXTRAER INFORMACIÓN DE INVENTARIO (Texto original restaurado)
+def extraer_datos_inventario(texto_usuario: str) -> dict:
     """
-    Gestiona el límite de tokens mediante una estrategia de resumen.
-    Cuando se supera el umbral, se comprimen los mensajes antiguos manteniendo 
-    los datos críticos de inventario.
+    Analiza el texto del usuario y extrae un JSON estructurado de productos.
     """
-    historial = historial_de_conversacion(sesion_id)
-
-    if len(historial.messages) > max_mensajes:
-        # Se separan los mensajes para resumir el pasado y mantener fresca la interacción inmediata
-        mensajes_a_resumir = historial.messages[:-2]
-        recientes = historial.messages[-2:]
-
-        # Transformación del historial de objetos a texto plano para el procesamiento del LLM
-        conversation_text = ""
-        for msj in mensajes_a_resumir:
-            role = "Usuario" if msj.type == "human" else "Asistente"
-            conversation_text += f"{role}: {msj.content}\n"
+    prompt_extraccion = (
+        "Eres un experto en logística de Unimarc. "
+        "Extrae los datos de inventario del siguiente texto y entrégalos "
+        "EXCLUSIVAMENTE en formato JSON. No incluyas saludos ni explicaciones.\n\n"
+        "Si el texto NO contiene información de inventario, responde solo: null\n\n"
+        "Formato requerido:\n"
+        "{\n"
+        "  \"productos\": [\n"
+        "    {\"nombre\": \"nombre del producto\", \"cantidad\": numero, \"unidad\": \"kg/unidades/cajas\"}\n"
+        "  ]\n"
+        "}\n\n"
+        f"Texto: \"{texto_usuario}\"\n"
+        "JSON:"
+    )
+    
+    try:
+        response = llm_util.invoke([HumanMessage(content=prompt_extraccion)])
+        contenido = response.content.strip()
         
-        # Prompt de ingeniería de alta precisión para evitar pérdida de entidades (códigos/stock)
-        prompt_resumen = (
-            "Eres un experto en logística de Unimarc. Resume la siguiente conversación. "
-            "REGLA DE ORO: No omitas códigos de productos, nombres de artículos ni cantidades de stock. "
-            "Resume el resto en máximo 2 líneas de forma técnica.\n\n"
-            f"Historial a resumir:\n{conversation_text}"
-        )
+        # Limpieza de bloques de código markdown
+        contenido = re.sub(r'```json|```', '', contenido).strip()
 
-        # Generación del resumen técnico optimizado en tokens
-        summary_response = llm.invoke(prompt_resumen, max_tokens=150)
-        summary = summary_response.content
-        
-        # Actualización del historial: Se limpia el exceso y se reinserta el resumen como contexto base
-        historial.clear()
-        historial.add_ai_message(f"[MEMORIA DE STOCK]: {summary}")
-        historial.messages.extend(recientes)
+        # Búsqueda del bloque entre llaves
+        match = re.search(r'\{.*\}', contenido, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        return None
+    except Exception as e:
+        print(f"[DEBUG ERROR EXTRAER]: {e}")
+        return None
+)
 ```
 #### 3. Prompts y Cadena de Ejecución (LCEL)
-Definimos la personalidad del Asistente de Unimarc y vinculamos el prompt con el historial utilizando `RunnableWithMessageHistory`.
 
+En esta sección se define la lógica de interacción y la personalidad del asistente de Unimarc:
+
+* **Configuración del Sistema:** El prompt establece directrices estrictas: tono profesional, sin emojis, respuestas breves y un formato de lectura específico (bloques angostos con saltos de línea frecuentes). Su objetivo es mantener el foco exclusivamente en la gestión de inventario.
+* **Control de Memoria Dinámica:** Se integra la función `sincronizar_contexto_stock` para optimizar el uso de tokens. Si la conversación excede los 6 mensajes, el sistema utiliza el `llm_util` para generar un resumen técnico que preserva datos críticos (códigos y stock) mientras libera espacio en la memoria.
+* **Cadena de Ejecución (LCEL):** Se utiliza `RunnableWithMessageHistory` para vincular el modelo con el historial de mensajes de forma nativa. Esto permite que el asistente recuerde el contexto previo de cada sesión de usuario de manera automática y eficiente.
+
+Esta estructura garantiza que el bot no solo responda de forma coherente, sino que siempre priorice la integridad de la información logística.
 ```python
 # #5. Crear el prompt de conversación con el contexto del historial
 # Definición de la personalidad del agente y las restricciones de formato (no emojis, saltos de línea)
@@ -217,48 +231,67 @@ conversation = RunnableWithMessageHistory(
     input_messages_key="input",
     history_messages_key="chat_history"
 )
-```
-#### 4. Motor de Streaming y Terminal de Usuario
-Finalmente, creamos la interfaz de terminal interactiva que ejecuta el ciclo de chat, procesando los *chunks* de texto a medida que llegan.
+# #6. PROMPT DE CONVERSACIÓN ORIGINAL RESTAURADO
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "Eres un asistente de Inventario de Unimarc. \n"
+    "Ayudas a los usuarios a gestionar su inventario, responder preguntas sobre productos, y proporcionar información relevante sobre el stock y las operaciones de la tienda.\n" 
+    "Tienes que ser amigable, eficiente y siempre estar dispuesto a ayudar. \n"
+    "Si no sabes la respuesta a una pregunta, es mejor admitirlo que inventar una respuesta incorrecta.\n"
+    "Siempre debes mantener un tono profesional y cortés en tus respuestas. \n"
+    "Las respuestas deben ser breves y al punto, evitando información innecesaria. \n"
+    "Si el usuario hace una pregunta que no está relacionada con el inventario o las operaciones de la tienda, debes redirigir la conversación de vuelta a temas relevantes para Unimarc.\n"
+    "Recuerda que tu objetivo principal es ayudar a los usuarios a gestionar su inventario de manera efectiva y proporcionar información precisa sobre los productos y operaciones de la tienda.\n"
+    "No uses emojis, manten limpio el formato de tus respuestas.\n"
+    "Escribe en bloques de texto ANGOSTOS.\n"
+    "Presiona 'Enter' (salto de línea) cada 8 o 10 palabras.\n"),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{input}")
+])
 
+conversation = RunnableWithMessageHistory(
+    prompt | llm,
+    get_session_history=historial_de_conversacion,
+    input_messages_key="input",
+    history_messages_key="chat_history"
+)
+
+```
+#### 4. Interfaz de Usuario y Motor de Streaming
+
+En esta sección final se configura la interacción directa en la terminal y el flujo de salida de datos:
+
+* **Respuesta en Tiempo Real (Streaming):** La función `ejecutar_chat` procesa la entrada del usuario y utiliza un bucle de *chunks* para mostrar la respuesta del modelo palabra por palabra. Esto mejora la experiencia de usuario al eliminar tiempos de espera largos.
+* **Ciclo de Control:** Se implementa un bucle principal (`while`) que mantiene la sesión activa, permitiendo ingresos continuos de stock o consultas, e incluye comandos de salida (`salir`, `exit`) para finalizar la sesión de forma segura.
+
+El resultado es una terminal logística funcional que combina el procesamiento de lenguaje natural con una gestión de datos eficiente y dinámica.
 ```python
-# #6. Función para ejecutar la conversación, sincronizando el contexto y mostrando la respuesta en tiempo real
+# #7. FUNCIÓN DE EJECUCIÓN
 def ejecutar_chat(input_text, session_id):
-    # Ejecución de la lógica de resumen preventivo
     sincronizar_contexto_stock(session_id)
-    
+
     config = {"configurable": {"session_id": session_id}}
     
-    # Visualización clara de la interacción en la terminal
-    print (f"[USUARIO]: {input_text}")
+    print(f"\n[USUARIO]: {input_text}")
     print(f"[OUTPUT]: ", end="", flush=True)
     
     try:
-        # Implementación de streaming para mejorar la fluidez de la respuesta
         for chunk in conversation.stream({"input": input_text}, config=config):
-            print(chunk.content, end="", flush=True)
+            if chunk.content:
+                print(chunk.content, end="", flush=True)
         print("\n")
     except Exception as e:
-        # Manejo de excepciones para evitar el cierre inesperado del programa
         print(f"\n[ERROR_LOG]: {e}")
 
-# #7. Simulación de una sesión de chat en la terminal
-id_actual = "SYS-LOG-01"
-print(f"TERMINAL DE GESTIÓN UNIMARC | SESIÓN: {id_actual}")
-print("-" * 50)
-
-# Bucle principal de ejecución del asistente
-while True:
-    user_input = input("[INPUT]: ")
-    
-    # Control de salida de la aplicación
-    if user_input.lower() in ["exit", "quit", "salir"]:
-        print("[SISTEMA]: Sesión finalizada.")
-        break
-    
-    # Procesamiento solo de entradas con contenido
-    if user_input.strip():
-        ejecutar_chat(user_input, id_actual)
+# #8. BUCLE TERMINAL
+if __name__ == "__main__":
+    SID = "SYS-LOG-01"
+    print(f"--- TERMINAL UNIMARC | MODELO: {MODEL_ID} ---")
+    while True:
+        user_input = input("[INPUT]: ")
+        if user_input.lower() in ["salir", "exit", "quit"]:
+            break
+        if user_input.strip():
+            ejecutar_chat(user_input, SID)
 ```
 ## 10. Solución de Problemas Comunes (Troubleshooting)
 
