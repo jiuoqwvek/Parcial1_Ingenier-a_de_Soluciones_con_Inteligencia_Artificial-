@@ -1,332 +1,85 @@
-# Proyecto: Sincronización Inteligente de Inventario (Caso: Unimarc)
+# Agente Inteligente Unimarc - Parcial 2
 
----
+Sistema de agente con herramientas integradas, memoria adaptativa y planificación multi-etapa para gestión de inventario y procesamiento de pedidos en Unimarc.
 
-## 1. Introducción
-Este repositorio contiene el desarrollo de una solución integral basada en agentes LLM y pipelines RAG, aplicada al sector de retail en Chile. El proyecto busca optimizar la gestión de stock para mejorar la experiencia de usuario en plataformas de pedidos digitales.
+## Estructura
 
-## 2. Identificación del Problema
-En cadenas como Unimarc o Santa Isabel, existe una desincronización crítica entre el stock físico de bodega y lo que el cliente ve en la aplicación.
-
-- **Desafío:** Los productos aparecen disponibles en la app, pero están agotados en la góndola real.
-- **Impacto:** Pérdida de ventas, frustración del cliente y ineficiencia en el trabajo de los repartidores.
-- **Causa:** Falta de un puente de información en tiempo real que procese datos de inventario y los traduzca a disponibilidad digital.
-
-## 3. Solución con IA
-Se propone un Agente Inteligente de Gestión de Existencias que utiliza:
-
-
-- **Pipeline RAG (Generación Aumentada por Recuperación):** Para conectar las fuentes de datos internas (inventario de bodega) con las respuestas del modelo, asegurando precisión absoluta.
-- **Agentes LLM:** Para procesar discrepancias de nombres entre sistemas y generar alertas automáticas de reposición.
-- **Prompts Optimizados:** Diseñados para actuar como un gestor de tienda experto, ajustando el contenido según el requerimiento organizacional
-
-## 4. Requisitos del Sistema (¡IMPORTANTE!)
-
-Para que este proyecto funcione correctamente, es **obligatorio** tener instalado y configurado lo siguiente:
-
-1.  **Git:** Necesario para clonar el repositorio.
-    * [Descargar Git aquí](https://git-scm.com/downloads)
-2.  **Python 3.13:** El proyecto requiere esta versión específica para asegurar la compatibilidad con LangChain.
-    * [Descargar Python 3.13 aquí](https://www.python.org/downloads/)
-3.  **GitHub Token (Access Models):** Este proyecto consume modelos de **GitHub Marketplace**.
-    * Genera tu **Personal Access Token (classic)** aquí: [GitHub Settings - Tokens](https://github.com/settings/tokens).
-    * Puedes explorar los modelos disponibles en: [GitHub Models](https://github.com/marketplace/models).
-4.  **LangSmith API Key:** Necesaria para el rastreo y observabilidad de la IA.
-    * Regístrate y obtén tu llave en: [LangSmith Dashboard](https://smith.langchain.com/).
-
-## 5. Clonar repositorio
-Sigue estos pasos en tu terminal:
-```bash
-# 1. Clonar tu repositorio en la terminal de VS Code
-git clone https://github.com/TU-USUARIO/Parcial1_Ingenier-a_de_Soluciones_con_Inteligencia_Artificial.git
-# 2. Utilizar comando cd para ingresar a la carpeta
-cd Parcial1_Ingenier-a_de_Soluciones_con_Inteligencia_Artificial-
+```
+agente_unimarc/
+├── models.py              # Estructuras de datos
+├── database.py            # Persistencia en JSON
+├── tools.py              # 13 herramientas integradas
+├── memory_manager.py     # Gestión de memoria corto/largo plazo
+├── agent.py              # Orquestación del agente
+├── ejemplos.py           # 5 ejemplos ejecutables
+├── requirements.txt      # Dependencias mínimas
+├── README.md             # Documentación técnica completa
+└── databases/            # Almacenamiento persistente (auto-generado)
 ```
 
-## 6. Crear Entorno Virtual
-Sigue estos pasos en tu terminal:
-```bash
-# Crear entorno virtual
-python -m venv .venv
+## Requisitos
 
-# Activar entorno virtual
-# macOS/Linux:
-source .venv/bin/activate
-# Windows:
-.venv\Scripts\activate
-```
+- Python 3.8+
+- python-dotenv
 
-## 7. Instalar Dependencias
-Sigue estos pasos en tu terminal:
+## Instalación
+
 ```bash
+cd agente_unimarc
 pip install -r requirements.txt
 ```
 
-## 8. Configurar Variables de Entorno
-Crea un nuevo archivo .env para ejecutar la IA
-Sigue estos pasos en la terminal:
+## Ejecución
+
+**Modo automático (recomendado):**
 ```bash
-# Copiar el archivo de ejemplo
-cp .env.example .env
+python3 ejemplos.py --auto
 ```
 
-Ya creado, edita el archivo `.env` con tus credenciales:
-
-```env
-OPENAI_BASE_URL="https://models.inference.ai.azure.com"
-GITHUB_BASE_URL="https://models.inference.ai.azure.com"
-OPENAI_EMBEDDINGS_URL="https://models.github.ai/inference"
-GITHUB_TOKEN="tu_github_token_aqui"
-LANGSMITH_TRACING="true"
-LANGSMITH_API_KEY="tu_langsmith_api_key_aqui"
-LANGSMITH_PROJECT="ingenieria_soluciones_con_ia"
+**Modo interactivo:**
+```bash
+python3 ejemplos.py
 ```
 
-## 9. Configuración Avanzada: Memoria Dinámica, Sesiones y Streaming
+## Características
 
-Para asegurar que la experiencia sea fluida y el consumo de tokens sea eficiente, implementamos una arquitectura moderna utilizando **LCEL (LangChain Expression Language)**. Esta configuración permite:
+### IL2.1 - Agentes con Herramientas
+- **HerramientasConsulta**: 7 métodos (lectura de datos)
+- **HerramientasEscritura**: 3 métodos (mutaciones y registros)
+- **HerramientasRazonamiento**: 3 métodos (evaluación y decisiones)
 
-1. **Gestión de múltiples sesiones:** Capacidad de manejar diferentes chats simultáneos (`session_id`).
-2. **Resumen Inteligente de Contexto:** Una función personalizada que monitorea el historial. Si este supera los 6 mensajes, un LLM resume la conversación antigua y mantiene intactos los 2 últimos mensajes para no perder el hilo inmediato.
-3. **Streaming Manual:** Las respuestas se iteran y se imprimen en consola en tiempo real (token a token).
+### IL2.2 - Memoria
+- **Corto plazo**: Buffer de últimos 100 eventos
+- **Largo plazo**: Patrones aprendidos y comportamientos históricos
+- **Persistencia**: JSON almacenado en `databases/`
 
-### Implementación Paso a Paso
+### IL2.3 - Planificación Adaptativa
+- **procesar_pedido_adaptativo()**: 4 etapas con decisiones contextuales
+- **reposicion_adaptativa()**: 3 etapas para gestión de stock crítico
+- **Decisiones adaptativas**: APROBAR, ESPERAR, GENERAR_ORDEN_URGENTE, RECHAZAR
 
-A continuación, se detalla el script principal que levanta el asistente de inventario en la terminal.
+### IL2.4 - Documentación Técnica
+- README.md con 630 líneas de documentación
+- Diagramas ASCII de arquitectura, memoria, decisiones y orquestación
+- 11 referencias bibliográficas en formato APA
 
-#### 1. Importación y Configuración del Modelo
-En esta sección se cargan las dependencias de LangChain y se configuran dos instancias de GPT-4.1:
+## Ejemplos
 
-* **LLM de Interacción (llm):** Configurado con `streaming=True` y temperatura 0.3. Proporciona respuestas fluidas en tiempo real con precisión técnica.
-* **LLM de Utilidad (llm_util):** Configurado con `temperature=0` y sin streaming. Actúa como motor determinista para la extracción de JSON y resúmenes, garantizando datos exactos.
+1. **Pedido Exitoso**: Stock disponible → APROBAR
+2. **Stock Insuficiente**: Producto bajo mínimo → ESPERAR
+3. **Reposición Adaptativa**: Identificación de críticos y generación de órdenes
+4. **Memoria**: Recuperación de eventos recientes y patrones aprendidos
+5. **Flujo Completo**: Orquestación end-to-end
 
-Las credenciales y URLs base se gestionan de forma segura mediante un archivo `.env` y la librería `python-dotenv`.
-```python
-import os
-import re
-import json
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
-from langchain_core.chat_history import InMemoryChatMessageHistory
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.history import RunnableWithMessageHistory
+## Documentación Completa
 
-# #1. CARGAR CONFIGURACIÓN DESDE EL .ENV
-load_dotenv()
+Consulta `agente_unimarc/README.md` para:
+- Arquitectura detallada
+- Explicación de cada módulo
+- Sistema de memoria y contexto
+- Planificación y decisiones adaptativas
+- Referencias y bibliografía
 
-MODEL_ID = "gpt-4.1"
+## Autor
 
-# #2. CONFIGURACIÓN DE LOS MODELOS (LLM)
-# Se configuran usando las llaves exactas de tu archivo .env
-
-# LLM para la conversación (con Streaming)
-llm = ChatOpenAI(
-    base_url=os.environ.get("OPENAI_BASE_URL"),
-    api_key=os.environ.get("GITHUB_TOKEN"),
-    model=MODEL_ID,
-    temperature=0.3,
-    streaming=True,
-    max_tokens=300
-)
-
-# LLM para procesos de extracción y resumen (Determinista)
-llm_util = ChatOpenAI(
-    base_url=os.environ.get("OPENAI_BASE_URL"),
-    api_key=os.environ.get("GITHUB_TOKEN"),
-    model=MODEL_ID,
-    temperature=0,
-    streaming=False
-)
-
-```
-
-#### 2. Gestión del Historial y Extracción de Datos
-
-En esta parte el código se encarga de la memoria del chat y de transformar las palabras del usuario en datos estructurados:
-
-* **Historial por sesión:** Se utiliza un diccionario para almacenar la conversación de cada usuario de forma independiente en la memoria RAM, permitiendo que el asistente mantenga el contexto de la charla.
-* **Extracción de Inventario (`extraer_datos_inventario`):** Esta función analiza el mensaje del usuario buscando productos y cantidades. Si encuentra datos, los convierte automáticamente a un formato JSON limpio para su uso posterior en bases de datos.
-* **Sincronización de contexto:** El sistema incluye una lógica de resumen que se activa al superar los 6 mensajes. Esto comprime el historial antiguo para ahorrar tokens, pero bajo una "regla de oro": nunca omitir códigos de productos, nombres ni stock, manteniendo siempre la información crítica a mano.
-
-El proceso asegura que el asistente no "olvide" los productos mencionados y que la información técnica se mantenga siempre precisa.
-```python
-# #3. ESTRUCTURA PARA EL HISTORIAL
-sesion_unimarc = {}
-
-def historial_de_conversacion(sesion_id : str):
-    if sesion_id not in sesion_unimarc:
-        sesion_unimarc[sesion_id] = InMemoryChatMessageHistory()
-    return sesion_unimarc[sesion_id]
-
-# #4. FUNCIÓN PARA EXTRAER INFORMACIÓN DE INVENTARIO (Texto original restaurado)
-def extraer_datos_inventario(texto_usuario: str) -> dict:
-    """
-    Analiza el texto del usuario y extrae un JSON estructurado de productos.
-    """
-    prompt_extraccion = (
-        "Eres un experto en logística de Unimarc. "
-        "Extrae los datos de inventario del siguiente texto y entrégalos "
-        "EXCLUSIVAMENTE en formato JSON. No incluyas saludos ni explicaciones.\n\n"
-        "Si el texto NO contiene información de inventario, responde solo: null\n\n"
-        "Formato requerido:\n"
-        "{\n"
-        "  \"productos\": [\n"
-        "    {\"nombre\": \"nombre del producto\", \"cantidad\": numero, \"unidad\": \"kg/unidades/cajas\"}\n"
-        "  ]\n"
-        "}\n\n"
-        f"Texto: \"{texto_usuario}\"\n"
-        "JSON:"
-    )
-    
-    try:
-        response = llm_util.invoke([HumanMessage(content=prompt_extraccion)])
-        contenido = response.content.strip()
-        
-        # Limpieza de bloques de código markdown
-        contenido = re.sub(r'```json|```', '', contenido).strip()
-
-        # Búsqueda del bloque entre llaves
-        match = re.search(r'\{.*\}', contenido, re.DOTALL)
-        if match:
-            return json.loads(match.group(0))
-        return None
-    except Exception as e:
-        print(f"[DEBUG ERROR EXTRAER]: {e}")
-        return None
-)
-```
-#### 3. Prompts y Cadena de Ejecución (LCEL)
-
-En esta sección se define la lógica de interacción y la personalidad del asistente de Unimarc:
-
-* **Configuración del Sistema:** El prompt establece directrices estrictas: tono profesional, sin emojis, respuestas breves y un formato de lectura específico (bloques angostos con saltos de línea frecuentes). Su objetivo es mantener el foco exclusivamente en la gestión de inventario.
-* **Control de Memoria Dinámica:** Se integra la función `sincronizar_contexto_stock` para optimizar el uso de tokens. Si la conversación excede los 6 mensajes, el sistema utiliza el `llm_util` para generar un resumen técnico que preserva datos críticos (códigos y stock) mientras libera espacio en la memoria.
-* **Cadena de Ejecución (LCEL):** Se utiliza `RunnableWithMessageHistory` para vincular el modelo con el historial de mensajes de forma nativa. Esto permite que el asistente recuerde el contexto previo de cada sesión de usuario de manera automática y eficiente.
-
-Esta estructura garantiza que el bot no solo responda de forma coherente, sino que siempre priorice la integridad de la información logística.
-```python
-# #5. Crear el prompt de conversación con el contexto del historial
-# Definición de la personalidad del agente y las restricciones de formato (no emojis, saltos de línea)
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "Eres un asistente de Inventario de Unimarc. \n"
-    "Ayudas a los usuarios a gestionar su inventario, responder preguntas sobre productos, y proporcionar información relevante sobre el stock y las operaciones de la tienda.\n" 
-    "Tienes que ser amigable, eficiente y siempre estar dispuesto a ayudar. \n"
-    "Si no sabes la respuesta a una pregunta, es mejor admitirlo que inventar una respuesta incorrecta.\n"
-    "Siempre debes mantener un tono profesional y cortés en tus respuestas. \n"
-    "Las respuestas deben ser breves y al punto, evitando información innecesaria. \n"
-    "Si el usuario hace una pregunta que no está relacionada con el inventario o las operaciones de la tienda, debes redirigir la conversación de vuelta a temas relevantes para Unimarc.\n"
-    "Recuerda que tu objetivo principal es ayudar a los usuarios a gestionar su inventario de manera efectiva y proporcionar información precisa sobre los productos y operaciones de la tienda.\n"
-    "No uses emojis, manten limpio el formato de tus respuestas.\n"
-    "Escribe en bloques de texto ANGOSTOS.\n"
-    "Presiona 'Enter' (salto de línea) cada 8 o 10 palabras.\n"),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}")
-])
-
-# Construcción de la cadena con soporte nativo para gestión de historial por sesión
-conversation = RunnableWithMessageHistory(
-    prompt | llm,
-    historial_de_conversacion,
-    input_messages_key="input",
-    history_messages_key="chat_history"
-)
-# #6. PROMPT DE CONVERSACIÓN ORIGINAL RESTAURADO
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "Eres un asistente de Inventario de Unimarc. \n"
-    "Ayudas a los usuarios a gestionar su inventario, responder preguntas sobre productos, y proporcionar información relevante sobre el stock y las operaciones de la tienda.\n" 
-    "Tienes que ser amigable, eficiente y siempre estar dispuesto a ayudar. \n"
-    "Si no sabes la respuesta a una pregunta, es mejor admitirlo que inventar una respuesta incorrecta.\n"
-    "Siempre debes mantener un tono profesional y cortés en tus respuestas. \n"
-    "Las respuestas deben ser breves y al punto, evitando información innecesaria. \n"
-    "Si el usuario hace una pregunta que no está relacionada con el inventario o las operaciones de la tienda, debes redirigir la conversación de vuelta a temas relevantes para Unimarc.\n"
-    "Recuerda que tu objetivo principal es ayudar a los usuarios a gestionar su inventario de manera efectiva y proporcionar información precisa sobre los productos y operaciones de la tienda.\n"
-    "No uses emojis, manten limpio el formato de tus respuestas.\n"
-    "Escribe en bloques de texto ANGOSTOS.\n"
-    "Presiona 'Enter' (salto de línea) cada 8 o 10 palabras.\n"),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}")
-])
-
-conversation = RunnableWithMessageHistory(
-    prompt | llm,
-    get_session_history=historial_de_conversacion,
-    input_messages_key="input",
-    history_messages_key="chat_history"
-)
-
-```
-#### 4. Interfaz de Usuario y Motor de Streaming
-
-En esta sección final se configura la interacción directa en la terminal y el flujo de salida de datos:
-
-* **Respuesta en Tiempo Real (Streaming):** La función `ejecutar_chat` procesa la entrada del usuario y utiliza un bucle de *chunks* para mostrar la respuesta del modelo palabra por palabra. Esto mejora la experiencia de usuario al eliminar tiempos de espera largos.
-* **Ciclo de Control:** Se implementa un bucle principal (`while`) que mantiene la sesión activa, permitiendo ingresos continuos de stock o consultas, e incluye comandos de salida (`salir`, `exit`) para finalizar la sesión de forma segura.
-
-El resultado es una terminal logística funcional que combina el procesamiento de lenguaje natural con una gestión de datos eficiente y dinámica.
-```python
-# #7. FUNCIÓN DE EJECUCIÓN
-def ejecutar_chat(input_text, session_id):
-    sincronizar_contexto_stock(session_id)
-
-    config = {"configurable": {"session_id": session_id}}
-    
-    print(f"\n[USUARIO]: {input_text}")
-    print(f"[OUTPUT]: ", end="", flush=True)
-    
-    try:
-        for chunk in conversation.stream({"input": input_text}, config=config):
-            if chunk.content:
-                print(chunk.content, end="", flush=True)
-        print("\n")
-    except Exception as e:
-        print(f"\n[ERROR_LOG]: {e}")
-
-# #8. BUCLE TERMINAL
-if __name__ == "__main__":
-    SID = "SYS-LOG-01"
-    print(f"--- TERMINAL UNIMARC | MODELO: {MODEL_ID} ---")
-    while True:
-        user_input = input("[INPUT]: ")
-        if user_input.lower() in ["salir", "exit", "quit"]:
-            break
-        if user_input.strip():
-            ejecutar_chat(user_input, SID)
-```
-## 10. Solución de Problemas Comunes (Troubleshooting)
-
-Al trabajar con APIs de Inteligencia Artificial y entornos virtuales, es posible que te encuentres con algunos errores comunes. Aquí detallamos cómo solucionarlos rápidamente:
-
-### 1. Error de Autenticación o Variables de Entorno no encontradas
-**Síntoma en terminal:** `KeyError: 'OPENAI_BASE_URL'` o `AuthenticationError: Incorrect API key provided`.
-* **Causa:** El script no está encontrando tus credenciales.
-* **Solución:** 1. Verifica que tu archivo de credenciales se llame exactamente `.env` (sin extensiones ocultas como `.env.txt`).
-  2. Asegúrate de que el archivo `.env` esté en la misma carpeta desde donde estás ejecutando el script.
-  3. Revisa que no haya espacios extra alrededor del signo `=` en tu archivo `.env` (ej: `GITHUB_TOKEN="tu_token"`).
-
-### 2. Error de Librería o Módulo no encontrado
-**Síntoma en terminal:** `ModuleNotFoundError: No module named 'langchain_openai'` o similares.
-* **Causa:** Las dependencias no están instaladas en el entorno actual.
-* **Solución:** 1. Verifica que tu entorno virtual esté activado (deberías ver `(.venv)` al inicio de la línea de tu terminal).
-  2. Vuelve a instalar las dependencias ejecutando: 
-     ```bash
-     pip install -r requirements.txt
-     ```
-  3. Si el error persiste específicamente con LangChain, fuerza la instalación manual: `pip install langchain langchain-openai langchain-core`.
-
-### 3. Límite de Tasa (Rate Limit) o Créditos Agotados
-**Síntoma en terminal:** `RateLimitError: Error code: 429` o la terminal se queda "pensando" indefinidamente y lanza un error de *Timeout*.
-* **Causa:** Estás haciendo demasiadas peticiones por minuto a la API o te has quedado sin saldo/cuota en tu token de GitHub Models/OpenAI.
-* **Solución:** 1. Espera unos minutos antes de volver a consultar el chat.
-  2. Revisa el panel de tu proveedor de API para confirmar si tienes cuota disponible en el modelo `gpt-4o`.
-
-### 4. El Streaming se ve desordenado o no imprime bien los caracteres
-**Síntoma en terminal:** Las palabras aparecen amontonadas o con símbolos extraños como `\n` impresos literalmente.
-* **Causa:** Incompatibilidad de codificación (Encoding) en ciertas terminales (muy común en el CMD antiguo de Windows).
-* **Solución:** 1. Te recomendamos usar terminales modernas como **Windows Terminal**, **Git Bash** o la terminal integrada de **VS Code**.
-  2. Si estás en Windows, puedes forzar la codificación UTF-8 ejecutando este comando en la consola antes de iniciar Python:
-     ```cmd
-     chcp 65001
-     ```
-
-        
+Solución desarrollada para evaluación Parcial 2 - Ingeniería de Soluciones con IA

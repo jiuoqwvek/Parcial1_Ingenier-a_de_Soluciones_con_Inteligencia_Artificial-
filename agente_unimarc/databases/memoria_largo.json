@@ -1,0 +1,60 @@
+{
+  "patrones": [
+    {
+      "entidad": "cliente",
+      "id_entidad": "Supermercado Central",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:06.140684"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Cliente A",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:06.999967"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Cliente B",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:07.298155"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Carrefour",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:07.761883"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Supermercado Central",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:16.730844"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Cliente A",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:17.525506"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Cliente B",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:17.830859"
+    },
+    {
+      "entidad": "cliente",
+      "id_entidad": "Carrefour",
+      "patron": "cliente_procesado",
+      "valor": true,
+      "fecha_aprendizaje": "2026-05-21T13:58:18.333275"
+    }
+  ]
+}

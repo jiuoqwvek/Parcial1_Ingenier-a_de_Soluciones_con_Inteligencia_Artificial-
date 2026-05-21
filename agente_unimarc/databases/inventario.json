@@ -1,0 +1,31 @@
+{
+  "productos": [
+    {
+      "sku": "SKU-ARR-001",
+      "nombre": "Arroz",
+      "stock": 180,
+      "minimo": 100,
+      "maximo": 1000,
+      "precio": 2500.0,
+      "proveedor": "Distrib A"
+    },
+    {
+      "sku": "SKU-PAN-001",
+      "nombre": "Pan",
+      "stock": 140,
+      "minimo": 50,
+      "maximo": 300,
+      "precio": 3500.0,
+      "proveedor": "Panader\u00eda B"
+    },
+    {
+      "sku": "SKU-LEC-001",
+      "nombre": "Leche",
+      "stock": 40,
+      "minimo": 75,
+      "maximo": 400,
+      "precio": 2000.0,
+      "proveedor": "L\u00e1cteos C"
+    }
+  ]
+}
