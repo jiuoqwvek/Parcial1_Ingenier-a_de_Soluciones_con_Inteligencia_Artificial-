@@ -25,12 +25,12 @@ Para que el sistema pueda enviar correos, necesitas configurar una contraseña d
 2. Copia el contenido de `.env.example`:
 
 ```
-SMTP_FROM_EMAIL={tu_correo_que_envia}
-SMTP_PASSWORD={tu_contraseña_de_app}
-ADMIN_EMAIL={tu_correo_que_recibe}
+SMTP_FROM_EMAIL=
+SMTP_PASSWORD=
+ADMIN_EMAIL=
 ```
 
-3. Reemplaza los valores entre `{}` con tus datos reales y guarda como `.env`
+3. Completa los valores con tus datos reales:
 
 ### 4. Verificar que funciona
 

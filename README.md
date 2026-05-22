@@ -47,9 +47,9 @@ Todo funciona desde terminal. Simple, profesional, sin dependencias web compleja
 cp .env.example .env
 
 # Editar .env y agregar:
-# SMTP_FROM_EMAIL={tu_correo_que_envia}
-# SMTP_PASSWORD={tu_contraseña_de_app}
-# ADMIN_EMAIL={tu_correo_que_recibe}
+# SMTP_FROM_EMAIL=
+# SMTP_PASSWORD=
+# ADMIN_EMAIL=
 ```
 
 Ayuda: Leer [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md)
