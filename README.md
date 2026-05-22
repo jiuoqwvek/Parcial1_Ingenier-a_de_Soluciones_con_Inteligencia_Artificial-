@@ -86,7 +86,6 @@ python scripts/enviar_reporte_diario.py  # Reporte diario
 .
 ├── README.md                           # Este archivo
 ├── .gitignore                          # Archivos ignorados
-├── CONFIGURACION_GMAIL.md              # Setup Gmail SMTP
 │
 ├── agente_llm_inventario/              # Parcial 1 - Agente LLM
 │   ├── README.md
@@ -96,6 +95,7 @@ python scripts/enviar_reporte_diario.py  # Reporte diario
 │
 └── agente_correos/                     # Parcial 2 - Gestión de correos
     ├── README.md
+    ├── CONFIGURACION_GMAIL.md          # Setup Gmail SMTP
     ├── requirements.txt
     ├── .env.example                    # Credenciales SMTP
     ├── core/
