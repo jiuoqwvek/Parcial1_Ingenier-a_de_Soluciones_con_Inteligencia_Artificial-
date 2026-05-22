@@ -47,9 +47,9 @@ Todo funciona desde terminal. Simple, profesional, sin dependencias web compleja
 cp .env.example .env
 
 # Editar .env y agregar:
-# SMTP_FROM_EMAIL=correo_que_envia_el_mensaje@gmail.com
-# SMTP_PASSWORD=contraseña_de_aplicacion
-# ADMIN_EMAIL=correo_que_recibe_el_mensaje@gmail.com
+# SMTP_FROM_EMAIL={tu_correo_que_envia}
+# SMTP_PASSWORD={tu_contraseña_de_app}
+# ADMIN_EMAIL={tu_correo_que_recibe}
 ```
 
 Ayuda: Leer [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md)
@@ -85,7 +85,7 @@ python scripts/enviar_reporte_diario.py
 
 ## Correos
 
-Todos se envían a: **correo_que_recibe_el_mensaje@gmail.com** (configurable en `.env`)
+Todos se envían al correo configurado en `ADMIN_EMAIL` del `.env`
 
 | Acción | Correo |
 |--------|--------|
@@ -131,7 +131,7 @@ Ejemplo de una orden:
 ```bash
 # 1. Crear orden (terminal)
 python agente_unimarc/scripts/demo_flujo.py
-# → Se envía correo a correo_que_recibe_el_mensaje@gmail.com
+# → Se envía correo al ADMIN_EMAIL configurado
 
 # 2. Leer correo
 # → Abre email y lee la orden
