@@ -4,7 +4,7 @@
 
 Este directorio contiene el código ejecutable del sistema.
 
-## 📁 Qué hay aquí
+## Qué hay aquí
 
 ```
 core/                              # Módulos de lógica
@@ -14,17 +14,17 @@ core/                              # Módulos de lógica
 └── models.py                     # Constantes y configuración
 
 scripts/                           # Scripts para ejecutar
-├── demo_flujo.py                 # ⚡ Crear una orden de ejemplo
-├── gestor_ordenes.py             # ⚡ Aprobar/rechazar órdenes
-├── enviar_alerta_inventario.py   # ⚡ Enviar alertas de stock bajo
-├── enviar_reporte_diario.py      # ⚡ Enviar reporte operativo
+├── demo_flujo.py                 # Crear una orden de ejemplo
+├── gestor_ordenes.py             # Aprobar/rechazar órdenes
+├── enviar_alerta_inventario.py   # Enviar alertas de stock bajo
+├── enviar_reporte_diario.py      # Enviar reporte operativo
 └── procesar_respuesta_orden.py   # (Módulo interno para confirmaciones)
 
 databases/                         # Datos guardados localmente
 └── ordenes_reposicion.json       # Todas las órdenes creadas
 ```
 
-## ⚡ Scripts Principales (Ejecutar estos)
+## Scripts Principales (Ejecutar estos)
 
 ### 1. Crear orden
 ```bash
@@ -46,19 +46,19 @@ python scripts/enviar_alerta_inventario.py
 python scripts/enviar_reporte_diario.py
 ```
 
-## 🗄️ Base de Datos
+## Base de Datos
 
 `databases/ordenes_reposicion.json` - Guarda todas las órdenes con su estado.
 
 Esta es la **única base de datos real**. Se actualiza automáticamente cuando creas, apruebas o rechazas órdenes.
 
-## 📖 Para Entender Más
+## Para Entender Más
 
 - **Guía de uso paso a paso**: Ver [`../ejemplos/flujo_completo.md`](../ejemplos/flujo_completo.md)
 - **Documentación general**: Ver [`../README.md`](../README.md)
 - **Configuración SMTP**: Ver [`../CONFIGURACION_GMAIL.md`](../CONFIGURACION_GMAIL.md)
 
-## ⚙️ Requisitos
+## Requisitos
 
 - Python 3.8+
 - `.env` configurado en la raíz del proyecto (ver [`../.env.example`](../.env.example))

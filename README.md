@@ -2,7 +2,7 @@
 
 **Sistema inteligente para gestión automatizada de correos: órdenes de reposición, alertas de inventario y reportes operativos para Unimarc.**
 
-## 🎯 Qué es esto
+## Qué es esto
 
 Un sistema que automatiza todo el proceso de órdenes de reposición:
 
@@ -14,7 +14,7 @@ Un sistema que automatiza todo el proceso de órdenes de reposición:
 
 Todo funciona desde terminal. Simple, profesional, sin dependencias web complejas.
 
-## 📁 Estructura
+## Estructura
 
 ```
 .
@@ -38,7 +38,7 @@ Todo funciona desde terminal. Simple, profesional, sin dependencias web compleja
     └── README.md                    # Documentación técnica
 ```
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### 1. Preparar
 
@@ -75,7 +75,7 @@ python scripts/enviar_alerta_inventario.py
 python scripts/enviar_reporte_diario.py
 ```
 
-## 📚 Documentación
+## Documentación
 
 | Documento | Para qué |
 |-----------|----------|
@@ -83,7 +83,7 @@ python scripts/enviar_reporte_diario.py
 | [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md) | Guía completa de uso del sistema |
 | [`agente_unimarc/README.md`](agente_unimarc/README.md) | Documentación técnica interna |
 
-## 📧 Correos
+## Correos
 
 Todos se envían a: **admin@ejemplo.com** (configurable en `.env`)
 
@@ -95,7 +95,7 @@ Todos se envían a: **admin@ejemplo.com** (configurable en `.env`)
 | Stock bajo | Alerta de inventario |
 | Reporte | Operativo diario |
 
-## 💾 Base de Datos
+## Base de Datos
 
 Todo se guarda en: `agente_unimarc/databases/ordenes_reposicion.json`
 
@@ -110,23 +110,23 @@ Ejemplo de una orden:
 }
 ```
 
-## 🔧 Requisitos
+## Requisitos
 
 - Python 3.8+
 - pip
 - Cuenta de Gmail (con contraseña de aplicación)
 - Conexión a internet
 
-## 🔐 Seguridad
+## Seguridad
 
-⚠️ **IMPORTANTE:**
+ **IMPORTANTE:**
 
 - El archivo `.env` contiene credenciales y **NO debe subirse a Git**
 - Está protegido en `.gitignore` automáticamente
 - Usa contraseña de **aplicación**, no tu contraseña personal de Gmail
 - Si la compartiste accidentalmente, regenera contraseña en Google
 
-## 📋 Flujo Completo (5 minutos)
+## Flujo Completo (5 minutos)
 
 ```bash
 # 1. Crear orden (terminal)
@@ -149,7 +149,7 @@ cat agente_unimarc/databases/ordenes_reposicion.json
 python agente_unimarc/scripts/enviar_reporte_diario.py
 ```
 
-## ❓ ¿Cómo funciona?
+## ¿Cómo funciona?
 
 1. **Scripts** (`agente_unimarc/scripts/`) - Lo que ejecutas
 2. **Core** (`agente_unimarc/core/`) - La lógica de negocio
@@ -159,18 +159,11 @@ python agente_unimarc/scripts/enviar_reporte_diario.py
 
 No hay servidor web, no hay URLs complicadas, todo desde terminal.
 
-## 📖 Para Más Detalles
+## Para Más Detalles
 
 1. **Primero leer**: [`README.md`](README.md) (este)
 2. **Luego usar**: [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md)
 3. **Finalmente código**: [`agente_unimarc/README.md`](agente_unimarc/README.md)
-
-## 🎓 Información del Curso
-
-- **Asignatura**: Ingeniería de Soluciones con IA
-- **Evaluación**: Parcial 1
-- **Institución**: Duoc UC
-- **Contacto**: admin@ejemplo.com
 
 ---
 
