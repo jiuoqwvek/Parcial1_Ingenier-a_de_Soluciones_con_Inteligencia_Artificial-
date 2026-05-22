@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 
 from models import Producto, Pedido, MemoriaCortoplazo, MemoriaLargoPlazo

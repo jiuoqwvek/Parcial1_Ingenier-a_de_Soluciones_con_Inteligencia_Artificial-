@@ -1,0 +1,72 @@
+# Configuración de Gmail
+
+Para que el sistema pueda enviar correos, necesitas configurar una contraseña de aplicación en Gmail.
+
+## Pasos
+
+### 1. Habilitar verificación de dos pasos
+
+1. Ve a https://myaccount.google.com/security
+2. En la sección "Verificación en dos pasos", haz clic en "Empezar"
+3. Sigue los pasos para configurar
+
+### 2. Generar contraseña de aplicación
+
+1. Ve a https://myaccount.google.com/apppasswords
+2. Selecciona:
+   - **Aplicación**: "Correo"
+   - **Dispositivo**: "Windows/Mac/Linux" (o el tuyo)
+3. Google generará una contraseña de 16 caracteres
+4. **Copia esta contraseña** (sin espacios)
+
+### 3. Configurar el archivo .env
+
+1. En la raíz del proyecto, crea un archivo llamado `.env`
+2. Copia el contenido de `.env.example`:
+
+```
+SMTP_FROM_EMAIL=tu_email@gmail.com
+SMTP_PASSWORD=contraseña_de_app
+ADMIN_EMAIL=admin@ejemplo.com
+```
+
+3. Reemplaza:
+   - `tu_email@gmail.com` con tu correo de Gmail
+   - `abcd efgh ijkl mnop` con la contraseña que generaste
+   - `ADMIN_EMAIL` con el correo donde quieres recibir los correos del sistema
+
+### 4. Verificar que funciona
+
+```bash
+cd agente_unimarc
+python scripts/demo_flujo.py
+```
+
+Si ves "Correo enviado exitosamente", ¡está funcionando!
+
+## Troubleshooting
+
+### Error: "Authentication failed"
+- Verifica que la contraseña sea la de **aplicación**, no la personal
+- Verifica que no haya espacios extras
+- Regenera una nueva contraseña en apppasswords
+
+### Error: "Server rejected with error: SMTP 535"
+- Verifica que hayas habilitado verificación de dos pasos
+- La contraseña de app solo funciona CON 2FA activo
+
+### No llegan los correos
+- Revisa la carpeta de spam
+- Verifica que `ADMIN_EMAIL` sea el correo que estés chequeando
+- Los correos pueden tardar unos segundos
+
+## ⚠️ Seguridad
+
+- **NUNCA** compartas tu archivo `.env`
+- **NUNCA** uses tu contraseña personal de Gmail
+- Usa siempre contraseña de **aplicación**
+- El archivo `.env` está en `.gitignore`, así que no se subirá a Git
+
+---
+
+¿Necesitas más ayuda? Consulta la [guía completa](../ejemplos/flujo_completo.md).

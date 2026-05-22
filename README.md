@@ -1,85 +1,182 @@
-# Agente Inteligente Unimarc - Parcial 2
+# Parcial 1 - Ingeniería de Soluciones con IA
 
-Sistema de agente con herramientas integradas, memoria adaptativa y planificación multi-etapa para gestión de inventario y procesamiento de pedidos en Unimarc.
+**Sistema inteligente para gestión automatizada de correos: órdenes de reposición, alertas de inventario y reportes operativos para Unimarc.**
 
-## Estructura
+## 🎯 Qué es esto
+
+Un sistema que automatiza todo el proceso de órdenes de reposición:
+
+1. **Crear órdenes** → Se envía correo automáticamente
+2. **Aprobar/rechazar** → Desde terminal, sin web
+3. **Alertas** → Notificaciones cuando stock es bajo
+4. **Reportes** → Reporte operativo diario
+5. **Registro** → Toda orden queda en base de datos local
+
+Todo funciona desde terminal. Simple, profesional, sin dependencias web complejas.
+
+## 📁 Estructura
 
 ```
-agente_unimarc/
-├── models.py              # Estructuras de datos
-├── database.py            # Persistencia en JSON
-├── tools.py              # 13 herramientas integradas
-├── memory_manager.py     # Gestión de memoria corto/largo plazo
-├── agent.py              # Orquestación del agente
-├── ejemplos.py           # 5 ejemplos ejecutables
-├── requirements.txt      # Dependencias mínimas
-├── README.md             # Documentación técnica completa
-└── databases/            # Almacenamiento persistente (auto-generado)
+.
+├── README.md                        ← Estás aquí
+├── .env.example                     # Copia a .env y agrega credenciales
+├── .gitignore                       # Archivos ignorados en Git
+├── CONFIGURACION_GMAIL.md           # Cómo configurar SMTP
+│
+├── ejemplos/                        # Documentación de uso
+│   └── flujo_completo.md           # Guía paso a paso
+│
+└── agente_unimarc/                  # Sistema principal
+    ├── scripts/
+    │   ├── demo_flujo.py           # Crear orden
+    │   ├── gestor_ordenes.py       # Aprobar/rechazar
+    │   ├── enviar_alerta_inventario.py
+    │   └── enviar_reporte_diario.py
+    ├── core/                        # Lógica interna
+    ├── databases/
+    │   └── ordenes_reposicion.json  # BD con todas las órdenes
+    └── README.md                    # Documentación técnica
 ```
 
-## Requisitos
+## 🚀 Inicio Rápido
 
-- Python 3.8+
-- python-dotenv
+### 1. Preparar
 
-## Instalación
+```bash
+# Configurar credenciales
+cp .env.example .env
+
+# Editar .env y agregar:
+# SMTP_FROM_EMAIL=tu_email@gmail.com
+# SMTP_PASSWORD=contraseña_de_app
+# ADMIN_EMAIL=admin@ejemplo.com
+```
+
+Ayuda: Leer [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md)
+
+### 2. Instalar
 
 ```bash
 cd agente_unimarc
 pip install -r requirements.txt
 ```
 
-## Ejecución
+### 3. Usar
 
-**Modo automático (recomendado):**
 ```bash
-python3 ejemplos.py --auto
+# Crear orden
+python scripts/demo_flujo.py
+
+# Aprobar/rechazar
+python scripts/gestor_ordenes.py
+
+# Otras funciones
+python scripts/enviar_alerta_inventario.py
+python scripts/enviar_reporte_diario.py
 ```
 
-**Modo interactivo:**
-```bash
-python3 ejemplos.py
+## 📚 Documentación
+
+| Documento | Para qué |
+|-----------|----------|
+| [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md) | Paso a paso para configurar Gmail SMTP |
+| [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md) | Guía completa de uso del sistema |
+| [`agente_unimarc/README.md`](agente_unimarc/README.md) | Documentación técnica interna |
+
+## 📧 Correos
+
+Todos se envían a: **admin@ejemplo.com** (configurable en `.env`)
+
+| Acción | Correo |
+|--------|--------|
+| Crear orden | Notificación pendiente |
+| Aprobar orden | Confirmación de aprobación |
+| Rechazar orden | Confirmación de rechazo |
+| Stock bajo | Alerta de inventario |
+| Reporte | Operativo diario |
+
+## 💾 Base de Datos
+
+Todo se guarda en: `agente_unimarc/databases/ordenes_reposicion.json`
+
+Ejemplo de una orden:
+```json
+{
+  "orden_id": "ORD-A3BAE290",
+  "estado": "aprobada",
+  "cantidad_total": 650,
+  "fecha_creacion": "2026-05-22T16:35:19",
+  "fecha_resolucion": "2026-05-22T16:36:45"
+}
 ```
 
-## Características
+## 🔧 Requisitos
 
-### IL2.1 - Agentes con Herramientas
-- **HerramientasConsulta**: 7 métodos (lectura de datos)
-- **HerramientasEscritura**: 3 métodos (mutaciones y registros)
-- **HerramientasRazonamiento**: 3 métodos (evaluación y decisiones)
+- Python 3.8+
+- pip
+- Cuenta de Gmail (con contraseña de aplicación)
+- Conexión a internet
 
-### IL2.2 - Memoria
-- **Corto plazo**: Buffer de últimos 100 eventos
-- **Largo plazo**: Patrones aprendidos y comportamientos históricos
-- **Persistencia**: JSON almacenado en `databases/`
+## 🔐 Seguridad
 
-### IL2.3 - Planificación Adaptativa
-- **procesar_pedido_adaptativo()**: 4 etapas con decisiones contextuales
-- **reposicion_adaptativa()**: 3 etapas para gestión de stock crítico
-- **Decisiones adaptativas**: APROBAR, ESPERAR, GENERAR_ORDEN_URGENTE, RECHAZAR
+⚠️ **IMPORTANTE:**
 
-### IL2.4 - Documentación Técnica
-- README.md con 630 líneas de documentación
-- Diagramas ASCII de arquitectura, memoria, decisiones y orquestación
-- 11 referencias bibliográficas en formato APA
+- El archivo `.env` contiene credenciales y **NO debe subirse a Git**
+- Está protegido en `.gitignore` automáticamente
+- Usa contraseña de **aplicación**, no tu contraseña personal de Gmail
+- Si la compartiste accidentalmente, regenera contraseña en Google
 
-## Ejemplos
+## 📋 Flujo Completo (5 minutos)
 
-1. **Pedido Exitoso**: Stock disponible → APROBAR
-2. **Stock Insuficiente**: Producto bajo mínimo → ESPERAR
-3. **Reposición Adaptativa**: Identificación de críticos y generación de órdenes
-4. **Memoria**: Recuperación de eventos recientes y patrones aprendidos
-5. **Flujo Completo**: Orquestación end-to-end
+```bash
+# 1. Crear orden (terminal)
+python agente_unimarc/scripts/demo_flujo.py
+# → Se envía correo a admin@ejemplo.com
 
-## Documentación Completa
+# 2. Leer correo
+# → Abre email y lee la orden
 
-Consulta `agente_unimarc/README.md` para:
-- Arquitectura detallada
-- Explicación de cada módulo
-- Sistema de memoria y contexto
-- Planificación y decisiones adaptativas
-- Referencias y bibliografía
+# 3. Gestionar orden (terminal)
+python agente_unimarc/scripts/gestor_ordenes.py
+# → Opción 1: Listar (ver token)
+# → Opción 2: Aprobar
+# → Se envía confirmación automática
 
-## Autor
+# 4. Verificar BD
+cat agente_unimarc/databases/ordenes_reposicion.json
 
-Solución desarrollada para evaluación Parcial 2 - Ingeniería de Soluciones con IA
+# 5. Reporte
+python agente_unimarc/scripts/enviar_reporte_diario.py
+```
+
+## ❓ ¿Cómo funciona?
+
+1. **Scripts** (`agente_unimarc/scripts/`) - Lo que ejecutas
+2. **Core** (`agente_unimarc/core/`) - La lógica de negocio
+3. **Email** (`email_service.py`) - Envía correos por SMTP
+4. **Órdenes** (`orden_manager.py`) - Gestiona estados de órdenes
+5. **Database** (`database.py`) - Guarda en JSON local
+
+No hay servidor web, no hay URLs complicadas, todo desde terminal.
+
+## 📖 Para Más Detalles
+
+1. **Primero leer**: [`README.md`](README.md) (este)
+2. **Luego usar**: [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md)
+3. **Finalmente código**: [`agente_unimarc/README.md`](agente_unimarc/README.md)
+
+## 🎓 Información del Curso
+
+- **Asignatura**: Ingeniería de Soluciones con IA
+- **Evaluación**: Parcial 1
+- **Institución**: Duoc UC
+- **Contacto**: admin@ejemplo.com
+
+---
+
+**¿Listo para empezar?**
+
+1. Copia `.env.example` a `.env`
+2. Agrega tus credenciales de Gmail
+3. Lee [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md) si necesitas ayuda
+4. Ejecuta `python agente_unimarc/scripts/demo_flujo.py`
