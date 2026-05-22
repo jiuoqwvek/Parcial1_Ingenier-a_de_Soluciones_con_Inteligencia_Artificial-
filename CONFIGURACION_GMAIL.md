@@ -25,15 +25,15 @@ Para que el sistema pueda enviar correos, necesitas configurar una contraseña d
 2. Copia el contenido de `.env.example`:
 
 ```
-SMTP_FROM_EMAIL=tu_email@gmail.com
-SMTP_PASSWORD=contraseña_de_app
-ADMIN_EMAIL=admin@ejemplo.com
+SMTP_FROM_EMAIL=correo_que_envia_el_mensaje@gmail.com
+SMTP_PASSWORD=contraseña_de_aplicacion
+ADMIN_EMAIL=correo_que_recibe_el_mensaje@gmail.com
 ```
 
 3. Reemplaza:
-   - `tu_email@gmail.com` con tu correo de Gmail
-   - `abcd efgh ijkl mnop` con la contraseña que generaste
-   - `ADMIN_EMAIL` con el correo donde quieres recibir los correos del sistema
+   - `correo_que_envia_el_mensaje@gmail.com` con tu correo de Gmail
+   - `contraseña_de_aplicacion` con la contraseña que generaste
+   - `correo_que_recibe_el_mensaje@gmail.com` con el correo donde quieres recibir las notificaciones
 
 ### 4. Verificar que funciona
 
