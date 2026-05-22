@@ -23,7 +23,7 @@ def demo_flujo_completo():
     print("DEMO: SISTEMA DE GESTION DE ORDENES UNIMARC")
     print("="*70)
     
-    # Datos de ejemplo
+    # Datos de la orden
     productos = [
         {
             "sku": "SKU-ARR-001",

@@ -95,7 +95,7 @@ Todos se envían al correo configurado en `ADMIN_EMAIL` del `.env`
 
 Todo se guarda en: `agente_unimarc/databases/ordenes_reposicion.json`
 
-Ejemplo de una orden:
+Estructura de una orden:
 ```json
 {
   "orden_id": "ORD-A3BAE290",

@@ -14,7 +14,7 @@ core/                              # Módulos de lógica
 └── models.py                     # Constantes y configuración
 
 scripts/                           # Scripts para ejecutar
-├── demo_flujo.py                 # Crear una orden de ejemplo
+├── demo_flujo.py                 # Crear orden de reposicion
 ├── gestor_ordenes.py             # Aprobar/rechazar órdenes
 ├── enviar_alerta_inventario.py   # Enviar alertas de stock bajo
 ├── enviar_reporte_diario.py      # Enviar reporte operativo
