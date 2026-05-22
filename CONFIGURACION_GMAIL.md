@@ -66,4 +66,4 @@ Si ves "Correo enviado exitosamente", ¡está funcionando!
 
 ---
 
-¿Necesitas más ayuda? Consulta la [guía completa](../ejemplos/flujo_completo.md).
+¿Necesitas más ayuda? Consulta la [documentación completa](../README.md).

@@ -23,9 +23,6 @@ Todo funciona desde terminal. Simple, profesional, sin dependencias web compleja
 ├── .gitignore                       # Archivos ignorados en Git
 ├── CONFIGURACION_GMAIL.md           # Cómo configurar SMTP
 │
-├── ejemplos/                        # Documentación de uso
-│   └── flujo_completo.md           # Guía paso a paso
-│
 └── agente_unimarc/                  # Sistema principal
     ├── scripts/
     │   ├── demo_flujo.py           # Crear orden
@@ -80,7 +77,6 @@ python scripts/enviar_reporte_diario.py
 | Documento | Para qué |
 |-----------|----------|
 | [`CONFIGURACION_GMAIL.md`](CONFIGURACION_GMAIL.md) | Paso a paso para configurar Gmail SMTP |
-| [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md) | Guía completa de uso del sistema |
 | [`agente_unimarc/README.md`](agente_unimarc/README.md) | Documentación técnica interna |
 
 ## Correos
@@ -162,8 +158,7 @@ No hay servidor web, no hay URLs complicadas, todo desde terminal.
 ## Para Más Detalles
 
 1. **Primero leer**: [`README.md`](README.md) (este)
-2. **Luego usar**: [`ejemplos/flujo_completo.md`](ejemplos/flujo_completo.md)
-3. **Finalmente código**: [`agente_unimarc/README.md`](agente_unimarc/README.md)
+2. **Código**: [`agente_unimarc/README.md`](agente_unimarc/README.md)
 
 ---
 

@@ -54,7 +54,6 @@ Esta es la **única base de datos real**. Se actualiza automáticamente cuando c
 
 ## Para Entender Más
 
-- **Guía de uso paso a paso**: Ver [`../ejemplos/flujo_completo.md`](../ejemplos/flujo_completo.md)
 - **Documentación general**: Ver [`../README.md`](../README.md)
 - **Configuración SMTP**: Ver [`../CONFIGURACION_GMAIL.md`](../CONFIGURACION_GMAIL.md)
 
