@@ -1,4 +1,4 @@
-# agente_unimarc
+# agente_correos
 
 **Sistema de gestión de órdenes de reposición, alertas de inventario y reportes operativos para Unimarc.**
 
@@ -60,5 +60,5 @@ Esta es la **única base de datos real**. Se actualiza automáticamente cuando c
 ## Requisitos
 
 - Python 3.8+
-- `.env` configurado en la raíz del proyecto (ver [`../.env.example`](../.env.example))
+- `.env` configurado en esta misma carpeta (ver [`./.env.example`](./.env.example))
 - `pip install -r requirements.txt`

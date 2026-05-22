@@ -21,8 +21,8 @@ Para que el sistema pueda enviar correos, necesitas configurar una contraseña d
 
 ### 3. Configurar el archivo .env
 
-1. En la raíz del proyecto, crea un archivo llamado `.env`
-2. Copia el contenido de `.env.example`:
+1. En la carpeta `agente_correos/`, crea un archivo llamado `.env`
+2. Copia el contenido de `agente_correos/.env.example`:
 
 ```
 SMTP_FROM_EMAIL=
@@ -35,7 +35,7 @@ ADMIN_EMAIL=
 ### 4. Verificar que funciona
 
 ```bash
-cd agente_unimarc
+cd agente_correos
 python scripts/demo_flujo.py
 ```
 

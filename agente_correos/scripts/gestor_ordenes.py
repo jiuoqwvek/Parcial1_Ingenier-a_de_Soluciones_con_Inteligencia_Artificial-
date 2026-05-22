@@ -6,7 +6,7 @@ Simula lo que pasaría cuando el admin hace click en los botones del correo
 import sys
 import os
 
-# Agregar la carpeta padre (agente_unimarc) al path
+# Agregar la carpeta padre (agente_correos) al path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.orden_manager import gestor_ordenes

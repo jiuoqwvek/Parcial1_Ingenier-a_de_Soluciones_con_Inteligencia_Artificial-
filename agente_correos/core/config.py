@@ -6,8 +6,8 @@ Todas las variables de entorno se cargan aquí desde .env.
 import os
 from dotenv import load_dotenv
 
-# Buscar .env desde la raíz del proyecto
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '.env')
+# Buscar .env desde la raíz de agente_correos
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
 load_dotenv(dotenv_path)
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "")

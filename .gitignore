@@ -10,7 +10,7 @@ ENV/
 .env.*.local
 
 # Bases de datos generadas (datos locales)
-agente_unimarc/databases/*.json
+agente_correos/databases/*.json
 
 # Archivos de Python
 __pycache__/
