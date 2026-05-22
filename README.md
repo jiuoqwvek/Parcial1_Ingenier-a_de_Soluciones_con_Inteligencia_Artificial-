@@ -1,4 +1,4 @@
-# Parcial 1 - Ingeniería de Soluciones con IA
+# Parcial 2 - Ingeniería de Soluciones con IA
 
 **Sistema inteligente para gestión automatizada de correos: órdenes de reposición, alertas de inventario y reportes operativos para Unimarc.**
 
