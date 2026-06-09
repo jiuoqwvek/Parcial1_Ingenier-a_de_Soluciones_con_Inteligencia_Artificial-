@@ -12,7 +12,8 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = "databases"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "databases")
 DB_ORDENES = os.path.join(DB_PATH, "ordenes_reposicion.json")
 
 

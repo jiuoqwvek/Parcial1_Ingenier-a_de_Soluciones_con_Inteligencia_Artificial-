@@ -128,7 +128,11 @@ def demo_flujo_completo():
                     </tr>
                 </table>
                 
-                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid #34495e; text-align: center;">
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px; border-left: 3px solid #34495e;">
+                    <p style="margin: 0 0 10px 0; font-size: 13px; color: #7f8c8d;">
+                        Token de aprobacion:
+                    </p>
+                    <p style="margin: 0 0 15px 0; font-size: 16px; color: #34495e; font-weight: 600;">{orden['token']}</p>
                     <p style="margin: 0; font-size: 12px; color: #7f8c8d;">
                         Una vez realizada tu eleccion, podras gestionarla en el sistema mediante terminal.
                     </p>

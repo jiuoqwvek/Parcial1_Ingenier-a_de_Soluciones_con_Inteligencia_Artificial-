@@ -64,8 +64,13 @@ source .venv/bin/activate
 ## 7. Instalar Dependencias
 Sigue estos pasos en tu terminal:
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
+
+> Si estás en Windows y quieres usar el intérprete activo directamente, también puedes ejecutar:
+> ```bash
+> python install_dependencies.py
+> ```
 
 ## 8. Configurar Variables de Entorno
 Crea un archivo `.env` a partir del ejemplo:
@@ -73,6 +78,7 @@ Crea un archivo `.env` a partir del ejemplo:
 # Copiar el archivo de ejemplo
 cp .env.ejemplo .env
 ```
+
 
 Ya creado, edita el archivo `.env` con tus credenciales:
 
@@ -86,7 +92,13 @@ LANGSMITH_API_KEY="tu_langsmith_api_key_aqui"
 LANGSMITH_PROJECT="ingenieria_soluciones_con_ia"
 ```
 
-## 9. Configuración Avanzada: Memoria Dinámica, Sesiones y Streaming
+## 9. Ejecutar el Agente de Inventario
+
+```bash
+python run_agent.py
+```
+
+## 10. Configuración Avanzada: Memoria Dinámica, Sesiones y Streaming
 
 Para asegurar que la experiencia sea fluida y el consumo de tokens sea eficiente, implementamos una arquitectura moderna utilizando **LCEL (LangChain Expression Language)**. Esta configuración permite:
 
