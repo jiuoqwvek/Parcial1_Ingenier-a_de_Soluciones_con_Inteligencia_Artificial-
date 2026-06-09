@@ -8,7 +8,8 @@ from models import Producto, Pedido, MemoriaCortoplazo, MemoriaLargoPlazo
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = "databases"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "databases")
 DB_INVENTARIO = os.path.join(DB_PATH, "inventario.json")
 DB_PEDIDOS = os.path.join(DB_PATH, "pedidos.json")
 DB_MEMORIA_CORTO = os.path.join(DB_PATH, "memoria_corto.json")
