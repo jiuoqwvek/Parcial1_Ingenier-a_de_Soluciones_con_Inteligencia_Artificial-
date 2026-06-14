@@ -7,6 +7,7 @@ from typing import Any
 
 from fastapi import HTTPException, Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,13 @@ class GuardrailsMiddleware(BaseHTTPMiddleware):
         request_id = str(uuid.uuid4())
         client_ip = request.client.host if request.client else "unknown"
 
+        # Start a metrics record for the incoming request. This captures cpu/memory start values
+        try:
+            metrics_collector.start_request(request_id=request_id, endpoint=str(request.url.path), method=request.method)
+        except Exception:
+            # Metrics collection should not block request processing
+            logger.debug("No se pudo iniciar métrica para request %s", request_id)
+
         if not rate_limiter.allow_request(client_ip):
             raise HTTPException(status_code=429, detail="Límite de solicitudes excedido. Intenta de nuevo más tarde.")
 
@@ -143,6 +151,10 @@ class GuardrailsMiddleware(BaseHTTPMiddleware):
                 "client_ip": client_ip,
             },
         )
+        # Nota: no finalizamos métricas aquí. Los endpoints deben proporcionar
+        # tokens y metadatos específicos (p. ej. prompt/completion tokens) y
+        # llamar a metrics_collector.end_request() al finalizar el procesamiento.
+        # Esto evita perder información útil proveniente del LLM.
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Process-Time-Ms"] = str(duration_ms)
         return response

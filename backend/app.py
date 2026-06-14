@@ -67,17 +67,37 @@ def get_inventory():
 @app.post("/inventory/query")
 def query_inventory(payload: InventoryQueryRequest):
     pregunta_segura = payload.question.strip()
+    import uuid, time
+    request_id = str(uuid.uuid4())
+    start = time.time()
     resultado = manager.query_inventory(pregunta_segura)
+    duration_ms = int((time.time() - start) * 1000)
+    # Protección y logging
     respuesta_segura = proteger_respuesta(resultado["respuesta"])
     logger.info(
         "inventory.query.complete",
         extra={
-            "source": resultado["metrics"]["source"],
-            "latency_ms": resultado["metrics"]["latency_ms"],
-            "prompt_tokens": resultado["metrics"]["prompt_tokens"],
-            "completion_tokens": resultado["metrics"]["completion_tokens"],
+            "request_id": request_id,
+            "source": resultado["metrics"].get("source"),
+            "latency_ms": resultado["metrics"].get("latency_ms", duration_ms),
+            "prompt_tokens": resultado["metrics"].get("prompt_tokens", 0),
+            "completion_tokens": resultado["metrics"].get("completion_tokens", 0),
         },
     )
+
+    # Registrar en el collector (incluye tokens y fuente)
+    try:
+        metrics_collector.end_request(
+            status_code=200,
+            response_time_ms=resultado["metrics"].get("latency_ms", duration_ms),
+            tokens_in=resultado["metrics"].get("prompt_tokens", 0),
+            tokens_out=resultado["metrics"].get("completion_tokens", 0),
+            error=None,
+            source=resultado["metrics"].get("source", "unknown"),
+        )
+    except Exception as exc:
+        logger.debug("No se pudo registrar métrica final para inventory.query: %s", exc)
+
     return {
         "success": True,
         "question": pregunta_segura,
@@ -88,9 +108,22 @@ def query_inventory(payload: InventoryQueryRequest):
 
 @app.post("/inventory/stock")
 def update_stock(payload: StockUpdateRequest):
+    import time
+    start = time.time()
     producto = manager.update_inventory_stock(payload.sku_or_name, payload.new_stock)
+    duration_ms = int((time.time() - start) * 1000)
     if not producto:
+        # registro de métrica de fallo
+        try:
+            metrics_collector.end_request(status_code=404, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error="Producto no encontrado", source="inventory/stock")
+        except Exception:
+            pass
         raise HTTPException(status_code=404, detail="Producto no encontrado")
+    # registro de éxito
+    try:
+        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="inventory/stock")
+    except Exception:
+        pass
     return {"success": True, "product": producto}
 
 
@@ -102,34 +135,70 @@ def get_pending_orders():
 
 @app.post("/orders")
 def create_order(payload: CreateOrderRequest):
+    import time
+    start = time.time()
     orden = manager.create_order(
         items=[item.dict() for item in payload.items],
         total=payload.total,
         cliente_email=payload.cliente_email or "",
         cliente_nombre=payload.cliente_nombre or "",
     )
+    duration_ms = int((time.time() - start) * 1000)
+    try:
+        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="orders/create")
+    except Exception:
+        pass
     return {"success": True, "order": orden}
 
 
 @app.post("/orders/{token}/approve")
 def approve_order(token: str):
+    import time
+    start = time.time()
     resultado = manager.approve_order(token)
+    duration_ms = int((time.time() - start) * 1000)
     if not resultado["exito"]:
+        try:
+            metrics_collector.end_request(status_code=404, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=resultado.get("mensaje"), source="orders/approve")
+        except Exception:
+            pass
         raise HTTPException(status_code=404, detail=resultado["mensaje"])
+    try:
+        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="orders/approve")
+    except Exception:
+        pass
     return {"success": True, "order": resultado["orden"]}
 
 
 @app.post("/orders/{token}/reject")
 def reject_order(token: str, payload: OrderActionRequest):
+    import time
+    start = time.time()
     resultado = manager.reject_order(token, payload.razon or "")
+    duration_ms = int((time.time() - start) * 1000)
     if not resultado["exito"]:
+        try:
+            metrics_collector.end_request(status_code=404, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=resultado.get("mensaje"), source="orders/reject")
+        except Exception:
+            pass
         raise HTTPException(status_code=404, detail=resultado["mensaje"])
+    try:
+        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="orders/reject")
+    except Exception:
+        pass
     return {"success": True, "order": resultado["orden"]}
 
 
 @app.get("/alerts/critical-stock")
 def get_critical_stock():
+    import time
+    start = time.time()
     productos = manager.get_critical_products()
+    duration_ms = int((time.time() - start) * 1000)
+    try:
+        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="alerts/critical-stock")
+    except Exception:
+        pass
     return {"success": True, "critical_products": productos, "count": len(productos)}
 
 
