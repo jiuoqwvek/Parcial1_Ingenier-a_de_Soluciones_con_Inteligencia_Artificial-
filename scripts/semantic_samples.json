@@ -1,0 +1,22 @@
+[
+  {
+    "question": "¿Qué productos tienen stock crítico hoy?",
+    "expected_answer": "stock crítico"
+  },
+  {
+    "question": "¿Cuál es el stock del SKU-ARR-001?",
+    "expected_answer": "SKU-ARR-001"
+  },
+  {
+    "question": "Listar productos con menos de 10 unidades",
+    "expected_answer": "menos de 10"
+  },
+  {
+    "question": "¿Hay producto Pan en stock?",
+    "expected_answer": "Pan"
+  },
+  {
+    "question": "¿Qué debo reabastecer urgente?",
+    "expected_answer": "requiere atención urgente"
+  }
+]
