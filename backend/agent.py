@@ -24,9 +24,9 @@ class AgentManager:
     def create_order(self, items, total: float, cliente_email: str = "", cliente_nombre: str = ""):
         orden = self.order_store.create_order(items, total, cliente_email, cliente_nombre)
         email_result = None
-        if cliente_email and cliente_nombre:
+        if cliente_email:
             email_result = self.email_service.send_order_confirmation(
-                cliente_email, cliente_nombre, orden["orden_id"], items, total
+                cliente_email, cliente_nombre or "Cliente", orden["orden_id"], items, total
             )
         return orden, email_result
 
