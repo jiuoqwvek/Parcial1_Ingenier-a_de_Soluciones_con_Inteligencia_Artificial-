@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_FILE = os.path.join(BASE_DIR, ".env")
 load_dotenv(ENV_FILE)
 
-MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4.1")
+MODEL_NAME = os.getenv("AGENT_MODEL", "gpt-4o-mini")
 BASE_URL = os.getenv("OPENAI_BASE_URL", "")
 API_KEY = os.getenv("GITHUB_TOKEN", "")
 
