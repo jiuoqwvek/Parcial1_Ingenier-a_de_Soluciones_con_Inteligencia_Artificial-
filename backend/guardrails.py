@@ -5,8 +5,9 @@ import time
 import uuid
 from typing import Any
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 from metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
@@ -131,7 +132,10 @@ class GuardrailsMiddleware(BaseHTTPMiddleware):
             logger.debug("No se pudo iniciar métrica para request %s", request_id)
 
         if not rate_limiter.allow_request(client_ip):
-            raise HTTPException(status_code=429, detail="Límite de solicitudes excedido. Intenta de nuevo más tarde.")
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Límite de solicitudes excedido. Intenta de nuevo más tarde."},
+            )
 
         if request.method in {"POST", "PUT", "PATCH"}:
             raw_body = await request.body()
@@ -140,7 +144,7 @@ class GuardrailsMiddleware(BaseHTTPMiddleware):
                     payload = json.loads(raw_body.decode("utf-8"))
                     validar_payload(payload)
                 except ValueError as exc:
-                    raise HTTPException(status_code=400, detail=str(exc))
+                    return JSONResponse(status_code=400, content={"detail": str(exc)})
                 except json.JSONDecodeError:
                     pass
 

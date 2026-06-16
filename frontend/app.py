@@ -25,7 +25,10 @@ def api_get(path):
     try:
         response = requests.get(f"{BACKEND_URL}{path}", timeout=15)
         if response.status_code >= 400:
-            return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
+            try:
+                return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
+            except Exception:
+                return {"error": response.text or f"HTTP {response.status_code}"}
         return response.json()
     except Exception as exc:
         return {"error": str(exc)}
@@ -35,7 +38,10 @@ def api_post(path, payload):
     try:
         response = requests.post(f"{BACKEND_URL}{path}", json=payload, timeout=20)
         if response.status_code >= 400:
-            return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
+            try:
+                return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
+            except Exception:
+                return {"error": response.text or f"HTTP {response.status_code}"}
         return response.json()
     except Exception as exc:
         return {"error": str(exc)}
