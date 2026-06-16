@@ -4,6 +4,11 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
 logger = logging.getLogger(__name__)
 
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
