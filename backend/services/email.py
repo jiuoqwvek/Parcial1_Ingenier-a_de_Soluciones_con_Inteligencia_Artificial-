@@ -38,6 +38,7 @@ class EmailService:
         mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
         # Intentar con STARTTLS (puerto 587) primero, luego SSL (puerto 465)
+        ultimo_error = ""
         for intento, (puerto, usar_ssl) in enumerate([
             (self.smtp_port, False),
             (465, True),
@@ -59,9 +60,10 @@ class EmailService:
                 return {"exito": True, "destinatario": destinatario}
             except Exception as exc:
                 logger.warning("Intento %d (puerto %d) falló: %s", intento + 1, puerto, exc)
+                ultimo_error = str(exc)
                 continue
 
-        return {"exito": False, "error": "Todos los intentos SMTP fallaron", "destinatario": destinatario}
+        return {"exito": False, "error": f"SMTP falló: {ultimo_error}", "destinatario": destinatario}
 
     def send_order_confirmation(self, correo_cliente: str, nombre_cliente: str, pedido_id: str, items: list, total: float) -> dict:
         if not self.configured:
