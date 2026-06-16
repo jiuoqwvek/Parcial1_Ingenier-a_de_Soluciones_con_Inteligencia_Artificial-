@@ -61,6 +61,8 @@ PII_PATTERNS = [
     r"\b\d{4}[ .-]?\d{4}[ .-]?\d{4}[ .-]?\d{4}\b",
 ]
 
+SAFE_KEYS = {"cliente_email", "cliente_nombre"}
+
 
 def detectar_prompt_injection(prompt: str) -> bool:
     if not isinstance(prompt, str):
@@ -97,7 +99,7 @@ def validar_payload(data: Any) -> None:
 
 def sanitizar_payload(data: Any) -> Any:
     if isinstance(data, dict):
-        return {key: sanitizar_payload(value) for key, value in data.items()}
+        return {key: value if key in SAFE_KEYS else sanitizar_payload(value) for key, value in data.items()}
     if isinstance(data, list):
         return [sanitizar_payload(item) for item in data]
     if isinstance(data, str):
