@@ -61,7 +61,7 @@ PII_PATTERNS = [
     r"\b\d{4}[ .-]?\d{4}[ .-]?\d{4}[ .-]?\d{4}\b",
 ]
 
-SAFE_KEYS = {"cliente_email", "cliente_nombre"}
+
 
 
 def detectar_prompt_injection(prompt: str) -> bool:
@@ -97,16 +97,6 @@ def validar_payload(data: Any) -> None:
             raise ValueError("Solicitud de entrada maliciosa detectada")
 
 
-def sanitizar_payload(data: Any) -> Any:
-    if isinstance(data, dict):
-        return {key: value if key in SAFE_KEYS else sanitizar_payload(value) for key, value in data.items()}
-    if isinstance(data, list):
-        return [sanitizar_payload(item) for item in data]
-    if isinstance(data, str):
-        return redactar_pii(data)
-    return data
-
-
 def proteger_respuesta(respuesta: str) -> str:
     return redactar_pii(respuesta)
 
@@ -133,8 +123,6 @@ class GuardrailsMiddleware(BaseHTTPMiddleware):
                 try:
                     payload = json.loads(raw_body.decode("utf-8"))
                     validar_payload(payload)
-                    sanitized = sanitizar_payload(payload)
-                    request._body = json.dumps(sanitized, ensure_ascii=False).encode("utf-8")
                 except ValueError as exc:
                     raise HTTPException(status_code=400, detail=str(exc))
                 except json.JSONDecodeError:

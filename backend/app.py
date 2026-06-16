@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from agent import AgentManager
-from guardrails import GuardrailsMiddleware, proteger_respuesta
+from guardrails import GuardrailsMiddleware, proteger_respuesta, redactar_pii
 from metrics import metrics_collector
 from database import db
 from services.email import EmailService
@@ -72,7 +72,7 @@ def get_inventory():
 
 @app.post("/inventory/query")
 def query_inventory(payload: InventoryQueryRequest):
-    pregunta_segura = payload.question.strip()
+    pregunta_segura = redactar_pii(payload.question.strip())
     import uuid, time
     request_id = str(uuid.uuid4())
     start = time.time()
