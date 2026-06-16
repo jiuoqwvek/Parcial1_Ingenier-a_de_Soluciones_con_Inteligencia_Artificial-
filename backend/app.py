@@ -8,6 +8,7 @@ from agent import AgentManager
 from guardrails import GuardrailsMiddleware, proteger_respuesta
 from metrics import metrics_collector
 from database import db
+from services.email import EmailService
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,6 +52,11 @@ class CreateOrderRequest(BaseModel):
 
 class OrderActionRequest(BaseModel):
     razon: Optional[str] = Field(None, example="Duplicado")
+
+
+class TestEmailRequest(BaseModel):
+    destinatario: str = Field(..., example="test@example.com")
+    nombre: str = Field(..., example="Juan")
 
 
 @app.get("/health")
@@ -137,7 +143,7 @@ def get_pending_orders():
 def create_order(payload: CreateOrderRequest):
     import time
     start = time.time()
-    orden = manager.create_order(
+    orden, email_result = manager.create_order(
         items=[item.dict() for item in payload.items],
         total=payload.total,
         cliente_email=payload.cliente_email or "",
@@ -148,7 +154,22 @@ def create_order(payload: CreateOrderRequest):
         metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="orders/create")
     except Exception:
         pass
-    return {"success": True, "order": orden}
+    return {"success": True, "order": orden, "email": email_result}
+
+
+@app.post("/test-email")
+def test_email(payload: TestEmailRequest):
+    svc = EmailService()
+    if not svc.configured:
+        return {"success": False, "error": "SMTP no configurado en el servidor"}
+    resultado = svc.send_order_confirmation(
+        correo_cliente=payload.destinatario,
+        nombre_cliente=payload.nombre,
+        pedido_id="TEST-0000",
+        items=[{"nombre": "Producto de prueba", "cantidad_orden": 1, "precio": 1000}],
+        total=1000,
+    )
+    return {"success": resultado["exito"], "email_result": resultado}
 
 
 @app.post("/orders/{token}/approve")

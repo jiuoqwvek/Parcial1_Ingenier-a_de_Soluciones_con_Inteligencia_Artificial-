@@ -14,7 +14,7 @@ if "last_response" not in st.session_state:
 
 menu = st.sidebar.selectbox(
     "Navegación",
-    ["Estado", "Inventario", "Consulta AI", "Stock", "Órdenes", "Alertas"],
+    ["Estado", "Inventario", "Consulta AI", "Stock", "Órdenes", "Alertas", "Email"],
 )
 
 st.sidebar.markdown("---")
@@ -106,6 +106,14 @@ elif menu == "Órdenes":
                 }
                 resultado = api_post("/orders", payload)
                 st.json(resultado)
+                email_info = resultado.get("email")
+                if email_info:
+                    if email_info.get("exito"):
+                        st.success(f"Correo enviado a {email_info.get('destinatario')}")
+                    elif email_info.get("razon"):
+                        st.warning(f"Correo no enviado: {email_info['razon']}")
+                    else:
+                        st.error(f"Error al enviar correo: {email_info.get('error', 'desconocido')}")
             except Exception as exc:
                 st.error(f"Error al procesar orden: {exc}")
 
@@ -138,3 +146,22 @@ elif menu == "Alertas":
         st.table(criticos.get("critical_products", []))
     else:
         st.error(criticos)
+
+elif menu == "Email":
+    st.header("Prueba de envío de correo")
+    with st.form("test_email_form"):
+        dest = st.text_input("Correo destino", placeholder="tu-email@ejemplo.com")
+        nombre = st.text_input("Nombre", placeholder="Tu nombre")
+        enviar = st.form_submit_button("Enviar correo de prueba")
+    if enviar:
+        if dest.strip() and nombre.strip():
+            res = api_post("/test-email", {"destinatario": dest, "nombre": nombre})
+            if res.get("success"):
+                st.success("Correo enviado exitosamente")
+            else:
+                st.error(res.get("error", "Error desconocido"))
+                detalle = res.get("email_result", {})
+                if detalle:
+                    st.code(detalle.get("error", "Sin detalle"))
+        else:
+            st.warning("Completa ambos campos")

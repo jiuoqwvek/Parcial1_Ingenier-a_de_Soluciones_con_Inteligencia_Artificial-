@@ -26,23 +26,37 @@ class EmailService:
         return bool(self.from_email and self.password)
 
     def _send_html(self, destinatario: str, asunto: str, cuerpo_html: str) -> dict:
-        try:
-            mensaje = MIMEMultipart("alternative")
-            mensaje["Subject"] = asunto
-            mensaje["From"] = self.from_email
-            mensaje["To"] = destinatario
-            mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
+        mensaje = MIMEMultipart("alternative")
+        mensaje["Subject"] = asunto
+        mensaje["From"] = self.from_email
+        mensaje["To"] = destinatario
+        mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
-            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=20) as smtp:
-                smtp.starttls()
-                smtp.login(self.from_email, self.password)
-                smtp.sendmail(self.from_email, destinatario, mensaje.as_string())
+        # Intentar con STARTTLS (puerto 587) primero, luego SSL (puerto 465)
+        for intento, (puerto, usar_ssl) in enumerate([
+            (self.smtp_port, False),
+            (465, True),
+        ]):
+            if intento == 1 and self.smtp_port == 465:
+                continue
+            try:
+                if usar_ssl:
+                    with smtplib.SMTP_SSL(self.smtp_server, puerto, timeout=20) as smtp:
+                        smtp.login(self.from_email, self.password)
+                        smtp.sendmail(self.from_email, destinatario, mensaje.as_string())
+                else:
+                    with smtplib.SMTP(self.smtp_server, puerto, timeout=20) as smtp:
+                        smtp.starttls()
+                        smtp.login(self.from_email, self.password)
+                        smtp.sendmail(self.from_email, destinatario, mensaje.as_string())
 
-            logger.info("Correo enviado a %s", destinatario)
-            return {"exito": True, "destinatario": destinatario}
-        except Exception as exc:
-            logger.warning("No se pudo enviar correo: %s", exc)
-            return {"exito": False, "error": str(exc), "destinatario": destinatario}
+                logger.info("Correo enviado a %s (puerto %d)", destinatario, puerto)
+                return {"exito": True, "destinatario": destinatario}
+            except Exception as exc:
+                logger.warning("Intento %d (puerto %d) falló: %s", intento + 1, puerto, exc)
+                continue
+
+        return {"exito": False, "error": "Todos los intentos SMTP fallaron", "destinatario": destinatario}
 
     def send_order_confirmation(self, correo_cliente: str, nombre_cliente: str, pedido_id: str, items: list, total: float) -> dict:
         if not self.configured:
