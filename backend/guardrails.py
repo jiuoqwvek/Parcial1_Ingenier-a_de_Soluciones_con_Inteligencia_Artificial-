@@ -32,6 +32,7 @@ class RateLimiter:
 rate_limiter = RateLimiter()
 
 PROMPT_INJECTION_PATTERNS = [
+    # English
     r"ignore (previous|prior) instructions",
     r"forget (your|the) rules",
     r"you are now .*agent",
@@ -51,6 +52,30 @@ PROMPT_INJECTION_PATTERNS = [
     r"disclose confidential",
     r"show me the source",
     r"delete previous instructions",
+    # Spanish
+    r"ignora (las )?instrucciones (anteriores|previas)",
+    r"olvida (tus |las )?reglas",
+    r"ahora eres (un|una) .*(agente|asistente|bot)",
+    r"sobreescribe tu programación",
+    r"ignora todo lo (anterior|previo)",
+    r"evita las restricciones",
+    r"omite (las )?(restricciones|reglas)",
+    r"no (respondas|contestes) (a )?(lo )?anterior",
+    r"solo responde con",
+    r"debes obedecer",
+    r"revela información (confidencial|privada)",
+    r"muéstrame (el |la |los |las ).*((código|fuente|codigo))",
+    r"elimina (las )?instrucciones anteriores",
+    r"haz caso omiso",
+    r"desobedece (las )?instrucciones",
+    r"nuevo (sistema |prompt )?sistema",
+    r"actúa como si (fueras|fueses)",
+    r"no sigas (las )?instrucciones",
+    r"como (asistente|agente) (AI|IA|inteligente)",
+    r"olvida todo",
+    r"respuesta sin restricciones",
+    r"ignora (el |la ).*(sistema|seguridad|restricción)",
+    r"no tengo restricciones",
 ]
 
 PII_PATTERNS = [
