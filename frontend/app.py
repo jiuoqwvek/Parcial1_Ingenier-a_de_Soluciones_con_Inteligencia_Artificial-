@@ -24,6 +24,8 @@ st.sidebar.markdown(f"**Backend**: `{BACKEND_URL}`")
 def api_get(path):
     try:
         response = requests.get(f"{BACKEND_URL}{path}", timeout=15)
+        if response.status_code >= 400:
+            return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
         return response.json()
     except Exception as exc:
         return {"error": str(exc)}
@@ -32,6 +34,8 @@ def api_get(path):
 def api_post(path, payload):
     try:
         response = requests.post(f"{BACKEND_URL}{path}", json=payload, timeout=20)
+        if response.status_code >= 400:
+            return {"error": response.json().get("detail", f"HTTP {response.status_code}")}
         return response.json()
     except Exception as exc:
         return {"error": str(exc)}
@@ -57,6 +61,8 @@ elif menu == "Consulta AI":
     if st.button("Enviar consulta"):
         if pregunta.strip():
             resultado = api_post("/inventory/query", {"question": pregunta})
+            if "error" in resultado:
+                st.error(f"Consulta bloqueada por seguridad: {resultado['error']}")
             st.session_state.last_response = resultado
     if st.session_state.last_response:
         st.subheader("Respuesta")
