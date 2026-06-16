@@ -68,7 +68,6 @@ PROMPT_INJECTION_PATTERNS = [
     r"nuevo prompt (del )?sistema",
     r"nuevo sistema (de )?prompt",
 ]
-]
 
 PII_PATTERNS = [
     r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
