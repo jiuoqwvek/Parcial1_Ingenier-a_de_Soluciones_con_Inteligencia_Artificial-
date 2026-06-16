@@ -29,11 +29,9 @@ class LLMInventoryAgent:
             logger.warning("OPENAI_BASE_URL o GITHUB_TOKEN no configurados. Se usará fallback local.")
             return None
         try:
-            import openai
+            from openai import OpenAI
 
-            openai.api_key = self.api_key
-            openai.api_base = self.base_url.rstrip("/")
-            return openai
+            return OpenAI(api_key=self.api_key, base_url=self.base_url.rstrip("/"))
         except ImportError:
             logger.warning("openai no instalado. Se usará fallback local.")
             return None
@@ -58,14 +56,14 @@ class LLMInventoryAgent:
     def _call_model(self, prompt: str) -> Dict[str, Any]:
         if not self.client:
             raise RuntimeError("Cliente de modelo no disponible")
-        response = self.client.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=1024,
         )
-        choice = response["choices"][0]["message"]["content"].strip()
-        return {"text": choice, "usage": response.get("usage", {})}
+        choice = response.choices[0].message.content.strip()
+        return {"text": choice, "usage": response.usage.model_dump() if response.usage else {}}
 
     def fallback_answer(self, pregunta: str, inventario: List[Dict[str, Any]]) -> str:
         pregunta_lower = pregunta.lower()
