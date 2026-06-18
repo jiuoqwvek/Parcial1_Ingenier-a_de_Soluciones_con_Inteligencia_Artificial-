@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/jiuoqwvek/Repo_prueba.git}"
+REPO_URL="${REPO_URL:-https://github.com/jiuoqwvek/Proyecto_Ingenier-a_de_Soluciones_con_Inteligencia_Artificial.git}"
 BRANCH="${BRANCH:-main}"
 TARGET_DIR="${TARGET_DIR:-/opt/ai-agent}"
 
