@@ -564,13 +564,14 @@ elif menu_clean == "Ordenes":
 
 # ---- ALERTAS ----
 elif menu_clean == "Alertas":
+    criticos = api_get("/alerts/critical-stock")
     render_section_header(
         "Alertas de Stock Critico",
         "Productos que requieren atencion inmediata",
         f"{len(criticos.get('critical_products', [])) if criticos.get('success') else 0} ALERTAS"
     )
     
-    criticos = api_get("/alerts/critical-stock")
+    
     if criticos.get("success"):
         critical_products = criticos.get("critical_products", [])
         
