@@ -201,10 +201,9 @@ with st.sidebar:
         key="main_menu"
     )
     
-    st.markdown("---")
     st.markdown(
         """
-        <div style='color: #b0c4d8; font-size: 0.8rem; padding: 0.5rem; text-align: center;'>
+        <div style='color: #b0c4d8; font-size: 0.8rem; padding: 0.5rem; text-align: center; margin-top: 1rem;'>
             <strong>Unimarc AI</strong><br>
             Panel de gestion inteligente<br>
             <span style='color: #6b8a9e;'>v2.0 · Conectado</span>
