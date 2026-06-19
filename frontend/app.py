@@ -80,20 +80,6 @@ st.markdown(
         background: linear-gradient(135deg, #c40016 0%, #a00012 100%) !important;
     }
     
-    /* ===== TARJETAS / BOX-CARD ===== */
-    .box-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        border-left: 6px solid #E2001A;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        margin-bottom: 1.2rem;
-        transition: box-shadow 0.2s ease;
-    }
-    .box-card:hover {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
-    }
-    
     /* ===== ENCABEZADOS ===== */
     .section-header {
         display: flex;
@@ -194,7 +180,6 @@ if "last_response" not in st.session_state:
 # SIDEBAR - CON MENÚ E INFORMACIÓN (SIN LOGO)
 # ============================================================
 with st.sidebar:
-    # ===== MENÚ PRINCIPAL EN EL SIDEBAR =====
     menu = st.selectbox(
         "MENU PRINCIPAL",
         ["Estado", "Inventario", "Consulta AI", "Stock", "Ordenes", "Alertas"],
@@ -259,7 +244,7 @@ def render_section_header(title, subtitle=None, badge=None):
     )
 
 # ============================================================
-# PÁGINAS
+# PÁGINAS - SIN SEPARADORES VACÍOS
 # ============================================================
 
 # ---- ESTADO ----
@@ -272,9 +257,7 @@ if menu == "Estado":
     
     health = api_get("/health")
     if isinstance(health, dict) and health.get("status") == "ok":
-        st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         st.info("El sistema se encuentra funcionando correctamente. Todos los servicios estan disponibles.")
-        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error(health)
 
@@ -294,7 +277,6 @@ elif menu == "Inventario":
             total_stock = sum(item.get('stock', 0) for item in inventory_data if isinstance(item, dict))
             low_stock = sum(1 for item in inventory_data if isinstance(item, dict) and item.get('stock', 0) < 10)
             
-            st.markdown("<div class='box-card'>", unsafe_allow_html=True)
             st.write("### Resumen")
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -303,12 +285,9 @@ elif menu == "Inventario":
                 st.metric("Stock Total", total_stock)
             with col3:
                 st.metric("Stock Critico", low_stock)
-            st.markdown("</div>", unsafe_allow_html=True)
         
-        st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         st.write("### Lista de Productos")
         st.dataframe(inventory_data)
-        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error(inventario)
 
@@ -344,7 +323,6 @@ elif menu == "Consulta AI":
             st.warning("Escribe una pregunta antes de consultar.")
 
     if st.session_state.last_response:
-        st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         st.subheader("Respuesta del Agente")
         resp = st.session_state.last_response
         
@@ -364,7 +342,6 @@ elif menu == "Consulta AI":
                 st.write(str(resp))
         else:
             st.write(str(resp))
-        st.markdown("</div>", unsafe_allow_html=True)
 
 # ---- STOCK ----
 elif menu == "Stock":
@@ -374,13 +351,11 @@ elif menu == "Stock":
     )
     
     with st.form(key="stock_form"):
-        st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             sku = st.text_input("SKU o nombre del producto", placeholder="Ej: SKU-ARR-001")
         with col2:
             nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
-        st.markdown("</div>", unsafe_allow_html=True)
         
         enviar = st.form_submit_button("Actualizar Stock")
     
@@ -404,7 +379,6 @@ elif menu == "Ordenes":
     )
     
     with st.expander("Crear nueva orden", expanded=True):
-        st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             cliente_email = st.text_input("Email del cliente", placeholder="cliente@ejemplo.com")
@@ -420,7 +394,6 @@ elif menu == "Ordenes":
         items = df_editado.to_dict('records')
         
         total = st.number_input("Total de la orden", min_value=0.0, value=0.0, step=100.0)
-        st.markdown("</div>", unsafe_allow_html=True)
         
         if st.button("Crear orden"):
             try:
@@ -445,7 +418,6 @@ elif menu == "Ordenes":
             except Exception as exc:
                 st.error(f"Error al procesar orden: {exc}")
 
-    st.markdown("---")
     st.subheader("Ordenes Pendientes de Aprobacion")
     
     pending = api_get("/orders/pending")
@@ -455,7 +427,6 @@ elif menu == "Ordenes":
         
         for orden in pending.get("pending_orders", []):
             with st.expander(f"Orden #{orden.get('orden_id')} - {orden.get('cliente_nombre')}"):
-                st.markdown("<div class='box-card'>", unsafe_allow_html=True)
                 st.markdown(f"""
                 **Cliente:** {orden.get('cliente_nombre', 'N/A')} | {orden.get('cliente_email', 'Sin correo')}  
                 **Total:** ${orden.get('total', 0):,.0f}  
@@ -463,7 +434,6 @@ elif menu == "Ordenes":
                 """)
                 if orden.get('items'):
                     st.table(pd.DataFrame(orden.get('items')))
-                st.markdown("</div>", unsafe_allow_html=True)
                 
                 token = orden.get("token")
                 col1, col2 = st.columns(2)
@@ -499,10 +469,8 @@ elif menu == "Alertas":
         critical_products = criticos.get("critical_products", [])
         
         if critical_products:
-            st.markdown("<div class='box-card'>", unsafe_allow_html=True)
             st.warning(f"**{len(critical_products)}** productos con stock critico")
             st.dataframe(critical_products)
-            st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.success("No hay productos con stock critico. Todo en orden!")
     else:
