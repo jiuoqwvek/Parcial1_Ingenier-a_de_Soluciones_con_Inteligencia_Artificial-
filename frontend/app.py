@@ -41,6 +41,25 @@ st.markdown(
         color: #ffffff !important;
     }
     
+    /* ===== ESTILO DEL SELECTBOX EN SIDEBAR ===== */
+    section[data-testid="stSidebar"] div[data-testid="stSelectbox"] {
+        background: #243447 !important;
+        border-radius: 8px !important;
+        border: 1px solid #3a4a5a !important;
+        padding: 0.2rem 0.5rem !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stSelectbox"] label {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stSelectbox"] select {
+        color: #ffffff !important;
+        background: transparent !important;
+    }
+    
     /* ===== BOTONES PRINCIPALES ===== */
     .stButton > button {
         background: linear-gradient(135deg, #E2001A 0%, #c40016 100%) !important;
@@ -73,35 +92,6 @@ st.markdown(
     }
     .box-card:hover {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
-    }
-    
-    /* ===== TARJETA DE MÉTRICAS ===== */
-    .metric-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.2rem 1.5rem;
-        border-bottom: 4px solid #E2001A;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        text-align: center;
-        transition: all 0.2s ease;
-    }
-    .metric-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    }
-    .metric-card .number {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #1a2a3a;
-        line-height: 1.2;
-    }
-    .metric-card .label {
-        font-size: 0.8rem;
-        color: #6b7a8a;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        margin-top: 0.2rem;
     }
     
     /* ===== ENCABEZADOS ===== */
@@ -182,51 +172,11 @@ st.markdown(
         border-left: 5px solid #E2001A !important;
     }
     
-    /* ===== MÉTRICAS EN FILA ===== */
-    .metric-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* ===== MENU PRINCIPAL - DESPLEGABLE BONITO ===== */
-    div[data-testid="stSelectbox"] {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 0.2rem 0.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 2px solid #e8eaed;
-        transition: all 0.3s ease;
-    }
-    div[data-testid="stSelectbox"]:hover {
-        border-color: #E2001A;
-        box-shadow: 0 4px 12px rgba(226, 0, 26, 0.10);
-    }
-    div[data-testid="stSelectbox"] label {
-        font-weight: 700 !important;
-        color: #1a2a3a !important;
-        font-size: 0.85rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    div[data-testid="stSelectbox"] select {
-        color: #1a2a3a !important;
-        font-weight: 600 !important;
-        background: transparent !important;
-    }
-    
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .section-header {
             flex-direction: column;
             align-items: flex-start;
-        }
-        .metric-card .number {
-            font-size: 1.6rem;
-        }
-        div[data-testid="stSelectbox"] {
-            width: 100% !important;
         }
     }
     </style>
@@ -241,13 +191,16 @@ if "last_response" not in st.session_state:
     st.session_state.last_response = None
 
 # ============================================================
-# SIDEBAR - SOLO LOGO E INFORMACIÓN
+# SIDEBAR - CON MENÚ E INFORMACIÓN (SIN LOGO)
 # ============================================================
 with st.sidebar:
-    st.image(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Unimarc_logo.svg/320px-Unimarc_logo.svg.png",
-        use_column_width=True,
+    # ===== MENÚ PRINCIPAL EN EL SIDEBAR =====
+    menu = st.selectbox(
+        "MENU PRINCIPAL",
+        ["Estado", "Inventario", "Consulta AI", "Stock", "Ordenes", "Alertas"],
+        key="main_menu"
     )
+    
     st.markdown("---")
     st.markdown(
         """
@@ -306,36 +259,6 @@ def render_section_header(title, subtitle=None, badge=None):
         unsafe_allow_html=True,
     )
 
-
-def render_metric_row(metrics):
-    """Renderiza una fila de métricas en tarjetas estilo Unimarc."""
-    html = "<div class='metric-row'>"
-    for label, value in metrics.items():
-        html += f"""
-        <div class='metric-card'>
-            <div class='number'>{value}</div>
-            <div class='label'>{label}</div>
-        </div>
-        """
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
-
-# ============================================================
-# MENÚ PRINCIPAL (ARRIBA A LA IZQUIERDA - SIN RECUADRO FEO)
-# ============================================================
-# Usamos columns para posicionar el menú a la izquierda
-col_menu, col_vacio = st.columns([2, 8])
-
-with col_menu:
-    menu = st.selectbox(
-        "MENU PRINCIPAL",
-        ["Estado", "Inventario", "Consulta AI", "Stock", "Ordenes", "Alertas"],
-        key="main_menu"
-    )
-
-# Línea separadora después del menú
-st.markdown("---")
-
 # ============================================================
 # PÁGINAS
 # ============================================================
@@ -350,16 +273,8 @@ if menu == "Estado":
     
     health = api_get("/health")
     if isinstance(health, dict) and health.get("status") == "ok":
-        render_metric_row({
-            "Estado": "Operativo",
-            "Servicios": "3 activos",
-            "Latencia": "< 50ms",
-            "Carga": "Normal"
-        })
-        
-        # Mensaje de estado sin detalles técnicos
         st.markdown("<div class='box-card'>", unsafe_allow_html=True)
-        st.info("✅ El sistema se encuentra funcionando correctamente. Todos los servicios están disponibles.")
+        st.info("El sistema se encuentra funcionando correctamente. Todos los servicios estan disponibles.")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error(health)
@@ -380,16 +295,19 @@ elif menu == "Inventario":
             total_stock = sum(item.get('stock', 0) for item in inventory_data if isinstance(item, dict))
             low_stock = sum(1 for item in inventory_data if isinstance(item, dict) and item.get('stock', 0) < 10)
             
-            render_metric_row({
-                "Total Articulos": total_items,
-                "Stock Total": total_stock,
-                "Stock Critico": low_stock,
-                "Ultima Actualizacion": "Hoy"
-            })
+            st.markdown("<div class='box-card'>", unsafe_allow_html=True)
+            st.write("### Resumen")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Articulos", total_items)
+            with col2:
+                st.metric("Stock Total", total_stock)
+            with col3:
+                st.metric("Stock Critico", low_stock)
+            st.markdown("</div>", unsafe_allow_html=True)
         
         st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         st.write("### Lista de Productos")
-        # ELIMINADO use_container_width
         st.dataframe(inventory_data)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -499,7 +417,6 @@ elif menu == "Ordenes":
             {"sku": "SKU-ARR-001", "nombre": "Arroz", "cantidad_orden": 10, "precio": 2500.0},
             {"sku": "SKU-PAN-001", "nombre": "Pan", "cantidad_orden": 5, "precio": 3500.0}
         ])
-        # ELIMINADO use_container_width
         df_editado = st.data_editor(df_inicial, num_rows="dynamic")
         items = df_editado.to_dict('records')
         
@@ -546,7 +463,6 @@ elif menu == "Ordenes":
                 **Estado:** Pendiente de revision
                 """)
                 if orden.get('items'):
-                    # ELIMINADO use_container_width
                     st.table(pd.DataFrame(orden.get('items')))
                 st.markdown("</div>", unsafe_allow_html=True)
                 
@@ -572,7 +488,6 @@ elif menu == "Ordenes":
 
 # ---- ALERTAS ----
 elif menu == "Alertas":
-    # Obtener datos primero
     criticos = api_get("/alerts/critical-stock")
     
     render_section_header(
@@ -587,7 +502,6 @@ elif menu == "Alertas":
         if critical_products:
             st.markdown("<div class='box-card'>", unsafe_allow_html=True)
             st.warning(f"**{len(critical_products)}** productos con stock critico")
-            # ELIMINADO use_container_width
             st.dataframe(critical_products)
             st.markdown("</div>", unsafe_allow_html=True)
         else:
