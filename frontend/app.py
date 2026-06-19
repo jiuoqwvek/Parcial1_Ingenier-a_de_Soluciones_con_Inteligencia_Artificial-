@@ -346,32 +346,22 @@ elif menu == "Consulta AI":
 # ---- STOCK ----
 elif menu == "Stock":
     render_section_header(
-        "Actualizacion de Stock",
-        "Ajusta los niveles de inventario de forma rapida"
+        "Agregar / Actualizar Stock",
+        "Agrega un nuevo producto o ajusta el stock existente"
     )
     
     with st.form(key="stock_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            sku = st.text_input("SKU o nombre del producto", placeholder="Ej: SKU-ARR-001")
-        with col2:
-            nombre = st.text_input("Nombre del producto", placeholder="Ej: Arroz Premium")
-        col3, col4 = st.columns(2)
-        with col3:
-            nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
-        with col4:
-            st.markdown("<br>", unsafe_allow_html=True)
-            enviar = st.form_submit_button("Guardar")
+        sku = st.text_input("SKU o nombre del producto", placeholder="Ej: SKU-ARR-001")
+        nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
+        enviar = st.form_submit_button("Guardar")
     
     if enviar:
         if sku.strip():
             payload = {"sku_or_name": sku, "new_stock": int(nuevo_stock)}
-            if nombre.strip():
-                payload["nombre"] = nombre.strip()
             resultado = api_post("/inventory/stock", payload)
             if resultado.get("success"):
                 if resultado.get("created"):
-                    st.success(f"Producto {nombre or sku} creado con {nuevo_stock} unidades")
+                    st.success(f"Producto {sku} creado con {nuevo_stock} unidades")
                 else:
                     st.success(f"Stock actualizado para {sku}")
                     st.info(f"Nuevo nivel: {nuevo_stock} unidades")
@@ -403,7 +393,8 @@ elif menu == "Ordenes":
         df_editado = st.data_editor(df_inicial, num_rows="dynamic")
         items = df_editado.to_dict('records')
         
-        total = st.number_input("Total de la orden", min_value=0.0, value=0.0, step=100.0)
+        total = sum(item.get("cantidad_orden", 0) * item.get("precio", 0) for item in items)
+        st.metric("Total de la orden", f"${total:,.0f}")
         
         if st.button("Crear orden"):
             try:
