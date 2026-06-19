@@ -24,26 +24,15 @@ st.markdown(
         font-family: 'Segoe UI', Roboto, sans-serif;
     }
     
+    /* ===== ELIMINAR PADDING EXTRA ===== */
+    .main > div {
+        padding-top: 0rem;
+    }
+    
     /* ===== SIDEBAR ===== */
     section[data-testid="stSidebar"] {
         background: #1a2a3a !important;
-        padding: 1rem 0.5rem !important;
-    }
-    section[data-testid="stSidebar"] .stSelectbox label {
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    section[data-testid="stSidebar"] .stSelectbox > div {
-        background: #243447 !important;
-        border-radius: 8px !important;
-        border: 1px solid #3a4a5a !important;
-    }
-    section[data-testid="stSidebar"] .stSelectbox select {
-        color: #ffffff !important;
-        background: transparent !important;
+        padding: 1.5rem 1rem !important;
     }
     section[data-testid="stSidebar"] .stMarkdown {
         color: #b0c4d8 !important;
@@ -71,21 +60,8 @@ st.markdown(
         box-shadow: 0 6px 20px rgba(226, 0, 26, 0.35);
         background: linear-gradient(135deg, #c40016 0%, #a00012 100%) !important;
     }
-    .stButton > button:active {
-        transform: translateY(0px);
-    }
     
-    /* ===== BOTONES SECUNDARIOS (aprobar/rechazar) ===== */
-    .stButton > button[kind="secondary"] {
-        background: #2c3e50 !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .stButton > button[kind="secondary"]:hover {
-        background: #1a2a3a !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    /* ===== TARJETAS / BOX-CARD (estilo Unimarc) ===== */
+    /* ===== TARJETAS / BOX-CARD ===== */
     .box-card {
         background: #ffffff;
         border-radius: 12px;
@@ -99,7 +75,7 @@ st.markdown(
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
     }
     
-    /* ===== TARJETA ALTERNATIVA (para métricas) ===== */
+    /* ===== TARJETA DE MÉTRICAS ===== */
     .metric-card {
         background: #ffffff;
         border-radius: 12px;
@@ -205,9 +181,6 @@ st.markdown(
         border-radius: 8px !important;
         border-left: 5px solid #E2001A !important;
     }
-    .stAlert .stAlertIcon {
-        color: #E2001A !important;
-    }
     
     /* ===== MÉTRICAS EN FILA ===== */
     .metric-row {
@@ -215,6 +188,32 @@ st.markdown(
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 1rem;
         margin-bottom: 1.5rem;
+    }
+    
+    /* ===== MENU PRINCIPAL - DESPLEGABLE BONITO ===== */
+    div[data-testid="stSelectbox"] {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 0.2rem 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 2px solid #e8eaed;
+        transition: all 0.3s ease;
+    }
+    div[data-testid="stSelectbox"]:hover {
+        border-color: #E2001A;
+        box-shadow: 0 4px 12px rgba(226, 0, 26, 0.10);
+    }
+    div[data-testid="stSelectbox"] label {
+        font-weight: 700 !important;
+        color: #1a2a3a !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    div[data-testid="stSelectbox"] select {
+        color: #1a2a3a !important;
+        font-weight: 600 !important;
+        background: transparent !important;
     }
     
     /* ===== RESPONSIVE ===== */
@@ -225,6 +224,9 @@ st.markdown(
         }
         .metric-card .number {
             font-size: 1.6rem;
+        }
+        div[data-testid="stSelectbox"] {
+            width: 100% !important;
         }
     }
     </style>
@@ -239,7 +241,7 @@ if "last_response" not in st.session_state:
     st.session_state.last_response = None
 
 # ============================================================
-# SIDEBAR - MENÚ DE NAVEGACIÓN (estilo Unimarc)
+# SIDEBAR - SOLO LOGO E INFORMACIÓN
 # ============================================================
 with st.sidebar:
     st.image(
@@ -247,16 +249,9 @@ with st.sidebar:
         use_column_width=True,
     )
     st.markdown("---")
-    
-    menu = st.selectbox(
-        "MENU PRINCIPAL",
-        ["Estado", "Inventario", "Consulta AI", "Stock", "Ordenes", "Alertas"],
-    )
-    
-    st.markdown("---")
     st.markdown(
         """
-        <div style='color: #b0c4d8; font-size: 0.8rem; padding: 0.5rem;'>
+        <div style='color: #b0c4d8; font-size: 0.8rem; padding: 0.5rem; text-align: center;'>
             <strong>Unimarc AI</strong><br>
             Panel de gestion inteligente<br>
             <span style='color: #6b8a9e;'>v2.0 · Conectado</span>
@@ -265,9 +260,6 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
     st.markdown(f"`{BACKEND_URL}`")
-
-# Limpiar nombre del menú para la lógica
-menu_clean = menu
 
 # ============================================================
 # FUNCIONES DE API
@@ -329,20 +321,35 @@ def render_metric_row(metrics):
     st.markdown(html, unsafe_allow_html=True)
 
 # ============================================================
+# MENÚ PRINCIPAL (ARRIBA A LA IZQUIERDA - SIN RECUADRO FEO)
+# ============================================================
+# Usamos columns para posicionar el menú a la izquierda
+col_menu, col_vacio = st.columns([2, 8])
+
+with col_menu:
+    menu = st.selectbox(
+        "MENU PRINCIPAL",
+        ["Estado", "Inventario", "Consulta AI", "Stock", "Ordenes", "Alertas"],
+        key="main_menu"
+    )
+
+# Línea separadora después del menú
+st.markdown("---")
+
+# ============================================================
 # PÁGINAS
 # ============================================================
 
 # ---- ESTADO ----
-if menu_clean == "Estado":
+if menu == "Estado":
     render_section_header(
         "Estado del Sistema",
         "Monitoreo en tiempo real del backend y servicios",
-        "LIVE"
+        "OPERATIVO"
     )
     
     health = api_get("/health")
     if isinstance(health, dict) and health.get("status") == "ok":
-        # Métricas rápidas
         render_metric_row({
             "Estado": "Operativo",
             "Servicios": "3 activos",
@@ -350,16 +357,15 @@ if menu_clean == "Estado":
             "Carga": "Normal"
         })
         
+        # Mensaje de estado sin detalles técnicos
         st.markdown("<div class='box-card'>", unsafe_allow_html=True)
-        st.subheader("Detalles Tecnicos")
-        for llave, valor in health.items():
-            st.markdown(f"**{llave.capitalize()}:** `{valor}`")
+        st.info("✅ El sistema se encuentra funcionando correctamente. Todos los servicios están disponibles.")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error(health)
 
 # ---- INVENTARIO ----
-elif menu_clean == "Inventario":
+elif menu == "Inventario":
     render_section_header(
         "Inventario Unimarc",
         "Vision completa del stock y niveles de abastecimiento"
@@ -369,7 +375,6 @@ elif menu_clean == "Inventario":
     if inventario.get("success"):
         inventory_data = inventario.get("inventory", [])
         
-        # Métricas resumen
         if inventory_data:
             total_items = len(inventory_data)
             total_stock = sum(item.get('stock', 0) for item in inventory_data if isinstance(item, dict))
@@ -384,13 +389,14 @@ elif menu_clean == "Inventario":
         
         st.markdown("<div class='box-card'>", unsafe_allow_html=True)
         st.write("### Lista de Productos")
-        st.dataframe(inventory_data, use_container_width=True)
+        # ELIMINADO use_container_width
+        st.dataframe(inventory_data)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error(inventario)
 
 # ---- CONSULTA AI ----
-elif menu_clean == "Consulta AI":
+elif menu == "Consulta AI":
     render_section_header(
         "Asistente IA de Inventario",
         "Pregunta sobre stock, productos y estado del almacen"
@@ -444,7 +450,7 @@ elif menu_clean == "Consulta AI":
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ---- STOCK ----
-elif menu_clean == "Stock":
+elif menu == "Stock":
     render_section_header(
         "Actualizacion de Stock",
         "Ajusta los niveles de inventario de forma rapida"
@@ -473,7 +479,7 @@ elif menu_clean == "Stock":
             st.warning("Completa el SKU o nombre del producto.")
 
 # ---- ÓRDENES ----
-elif menu_clean == "Ordenes":
+elif menu == "Ordenes":
     render_section_header(
         "Gestion de Ordenes",
         "Crea solicitudes y administra el flujo de aprobacion",
@@ -493,7 +499,8 @@ elif menu_clean == "Ordenes":
             {"sku": "SKU-ARR-001", "nombre": "Arroz", "cantidad_orden": 10, "precio": 2500.0},
             {"sku": "SKU-PAN-001", "nombre": "Pan", "cantidad_orden": 5, "precio": 3500.0}
         ])
-        df_editado = st.data_editor(df_inicial, num_rows="dynamic", use_container_width=True)
+        # ELIMINADO use_container_width
+        df_editado = st.data_editor(df_inicial, num_rows="dynamic")
         items = df_editado.to_dict('records')
         
         total = st.number_input("Total de la orden", min_value=0.0, value=0.0, step=100.0)
@@ -539,6 +546,7 @@ elif menu_clean == "Ordenes":
                 **Estado:** Pendiente de revision
                 """)
                 if orden.get('items'):
+                    # ELIMINADO use_container_width
                     st.table(pd.DataFrame(orden.get('items')))
                 st.markdown("</div>", unsafe_allow_html=True)
                 
@@ -563,22 +571,24 @@ elif menu_clean == "Ordenes":
         st.error(pending.get("error", "No se pudieron cargar las ordenes pendientes."))
 
 # ---- ALERTAS ----
-elif menu_clean == "Alertas":
+elif menu == "Alertas":
+    # Obtener datos primero
     criticos = api_get("/alerts/critical-stock")
+    
     render_section_header(
         "Alertas de Stock Critico",
         "Productos que requieren atencion inmediata",
         f"{len(criticos.get('critical_products', [])) if criticos.get('success') else 0} ALERTAS"
     )
     
-    
     if criticos.get("success"):
         critical_products = criticos.get("critical_products", [])
         
         if critical_products:
-            st.markdown("<div class='box-card' style='border-left-color: #E2001A;'>", unsafe_allow_html=True)
+            st.markdown("<div class='box-card'>", unsafe_allow_html=True)
             st.warning(f"**{len(critical_products)}** productos con stock critico")
-            st.dataframe(critical_products, use_container_width=True)
+            # ELIMINADO use_container_width
+            st.dataframe(critical_products)
             st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.success("No hay productos con stock critico. Todo en orden!")
