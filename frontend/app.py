@@ -355,16 +355,26 @@ elif menu == "Stock":
         with col1:
             sku = st.text_input("SKU o nombre del producto", placeholder="Ej: SKU-ARR-001")
         with col2:
+            nombre = st.text_input("Nombre del producto", placeholder="Ej: Arroz Premium")
+        col3, col4 = st.columns(2)
+        with col3:
             nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
-        
-        enviar = st.form_submit_button("Actualizar Stock")
+        with col4:
+            st.markdown("<br>", unsafe_allow_html=True)
+            enviar = st.form_submit_button("Guardar")
     
     if enviar:
         if sku.strip():
-            resultado = api_post("/inventory/stock", {"sku_or_name": sku, "new_stock": int(nuevo_stock)})
+            payload = {"sku_or_name": sku, "new_stock": int(nuevo_stock)}
+            if nombre.strip():
+                payload["nombre"] = nombre.strip()
+            resultado = api_post("/inventory/stock", payload)
             if resultado.get("success"):
-                st.success(f"Stock actualizado correctamente para {sku}")
-                st.info(f"Nuevo nivel registrado: {nuevo_stock} unidades")
+                if resultado.get("created"):
+                    st.success(f"Producto {nombre or sku} creado con {nuevo_stock} unidades")
+                else:
+                    st.success(f"Stock actualizado para {sku}")
+                    st.info(f"Nuevo nivel: {nuevo_stock} unidades")
             else:
                 st.error(f"Error: {resultado.get('error', 'Error desconocido')}")
         else:
