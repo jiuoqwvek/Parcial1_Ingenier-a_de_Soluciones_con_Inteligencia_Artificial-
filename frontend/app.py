@@ -346,29 +346,39 @@ elif menu == "Consulta AI":
 # ---- STOCK ----
 elif menu == "Stock":
     render_section_header(
-        "Agregar / Actualizar Stock",
-        "Agrega un nuevo producto o ajusta el stock existente"
+        "Actualizacion de Stock",
+        "Ajusta los niveles de inventario de forma rapida"
     )
     
     with st.form(key="stock_form"):
-        sku = st.text_input("SKU o nombre del producto", placeholder="Ej: SKU-ARR-001")
-        nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
-        enviar = st.form_submit_button("Guardar")
+        col1, col2 = st.columns(2)
+        with col1:
+            sku = st.text_input("SKU", placeholder="Ej: SKU-ARR-001")
+        with col2:
+            nombre = st.text_input("Nombre del producto", placeholder="Ej: Arroz Premium")
+        col3, col4 = st.columns(2)
+        with col3:
+            nuevo_stock = st.number_input("Nuevo stock", min_value=0, value=0, step=1)
+        with col4:
+            st.markdown("<br>", unsafe_allow_html=True)
+            enviar = st.form_submit_button("Guardar")
     
     if enviar:
         if sku.strip():
             payload = {"sku_or_name": sku, "new_stock": int(nuevo_stock)}
+            if nombre.strip():
+                payload["nombre"] = nombre.strip()
             resultado = api_post("/inventory/stock", payload)
             if resultado.get("success"):
                 if resultado.get("created"):
-                    st.success(f"Producto {sku} creado con {nuevo_stock} unidades")
+                    st.success(f"Producto {nombre or sku} creado con {nuevo_stock} unidades")
                 else:
                     st.success(f"Stock actualizado para {sku}")
                     st.info(f"Nuevo nivel: {nuevo_stock} unidades")
             else:
                 st.error(f"Error: {resultado.get('error', 'Error desconocido')}")
         else:
-            st.warning("Completa el SKU o nombre del producto.")
+            st.warning("Completa el SKU.")
 
 # ---- ÓRDENES ----
 elif menu == "Ordenes":
