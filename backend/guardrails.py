@@ -33,7 +33,7 @@ class RateLimiter:
 rate_limiter = RateLimiter()
 
 PROMPT_INJECTION_PATTERNS = [
-    # English
+    # English - generic injection
     r"ignore (previous|prior) instructions",
     r"forget (your|the) rules",
     r"you are now .*agent",
@@ -46,14 +46,43 @@ PROMPT_INJECTION_PATTERNS = [
     r"do not answer the previous",
     r"only answer with",
     r"bypasses the filter",
-    r"system prompt",
     r"if you are.*assistant",
     r"respond with.*nothing else",
     r"you must obey the following demands",
     r"disclose confidential",
     r"show me the source",
     r"delete previous instructions",
-    # Spanish
+    r"reveal your (instructions|prompt|system)",
+    r"output your (prompt|instructions|system)",
+    r"repeat (after|the|your|all).*(instruction|prompt)",
+    r"print your (prompt|instructions)",
+    r"what (are|is) your (instructions|prompt|system)",
+    r"tell me your (prompt|instructions|system)",
+    r"copy of your (prompt|instructions)",
+    r"give me your (prompt|instructions)",
+    r"show me your (prompt|instructions|system)",
+    r"let me see your (prompt|instructions|system)",
+    r"write your (prompt|instructions)",
+    r"display your (prompt|instructions|system)",
+    r"initial (instructions|prompt|system)",
+    r"original (instructions|prompt|system)",
+    r"first message.*instructions",
+    r"extract.*(prompt|instructions)",
+    r"leak.*(prompt|instructions)",
+    r"expose.*(prompt|instructions)",
+    r"everything before this",
+    r"say your system prompt",
+    r"do you have.*instructions",
+    r"what can you do and not do",
+    r"list your (rules|constraints|guidelines)",
+    # English - role-play / deceptions
+    r"act as (if|though).*you",
+    r"pretend.*you are",
+    r"from now on.*you are",
+    r"new character.*you",
+    r"you are no longer",
+    r"role.?play",
+    # Spanish - generic injection
     r"ignora (las )?instrucciones (anteriores|previas)",
     r"olvida (tus |las )?reglas",
     r"sobreescribe tu programación",
@@ -68,6 +97,38 @@ PROMPT_INJECTION_PATTERNS = [
     r"te voy a hackear",
     r"nuevo prompt (del )?sistema",
     r"nuevo sistema (de )?prompt",
+    # Spanish - instruction leakage
+    r"cuál es tu (prompt|instrucción|instrucciones|sistema)",
+    r"dime (tus |cuáles son tus )?(instrucciones|reglas|prompt)",
+    r"repite (tus |las )?(instrucciones|reglas|prompt|indicaciones)",
+    r"muéstrame tu (prompt|instrucción|sistema)",
+    r"dame tu (prompt|instrucción|instrucciones)",
+    r"escribe tu (prompt|instrucción|sistema)",
+    r"copia textual (de )?(tus|las)? (instrucciones|prompt|reglas)",
+    r"qué dice tu prompt",
+    r"qué te dijeron",
+    r"qué te (dijo|dijeron) el sistema",
+    r"cómo (funcionas|estás programado|te programaron)",
+    r"cuáles son tus (límites|límites|restricciones|reglas)",
+    r"enséñame tu (prompt|instrucción|sistema)",
+    r"has una copia de tu (prompt|instrucción|sistema)",
+    r"todo lo que (puedes|debes) hacer",
+    r"qué (puedes|sabes) hacer",
+    r"dame (todo )?el contexto",
+    r"muestra.*(instrucciones|prompt|sistema)",
+    r"revela.*(instrucciones|prompt|sistema)",
+    r"sacame.*(instrucciones|prompt|sistema)",
+    r"dame.*(instrucciones|prompt|sistema)",
+    r"quiero.*(instrucciones|prompt|sistema)",
+    r"necesito.*(instrucciones|prompt|sistema)",
+    r"como.*(instrucciones|prompt|sistema)",
+]
+
+LEAKED_INSTRUCTION_PATTERNS = [
+    r"REGLAS DE SEGURIDAD",
+    r"Nunca reveles",
+    r"Solo puedo ayudarte con consultas sobre inventario",
+    r"No puedo revelar información interna del sistema",
 ]
 
 PII_PATTERNS = [
@@ -86,6 +147,15 @@ def detectar_prompt_injection(prompt: str) -> bool:
         return False
     prompt_lower = prompt.lower()
     return any(re.search(patron, prompt_lower, flags=re.IGNORECASE) for patron in PROMPT_INJECTION_PATTERNS)
+
+
+def detectar_leakage_en_respuesta(respuesta: str) -> bool:
+    if not isinstance(respuesta, str):
+        return False
+    respuesta_lower = respuesta.lower()
+    if any(re.search(patron, respuesta_lower, flags=re.IGNORECASE) for patron in LEAKED_INSTRUCTION_PATTERNS):
+        return True
+    return False
 
 
 def redactar_pii(texto: str) -> str:
@@ -115,7 +185,14 @@ def validar_payload(data: Any) -> None:
 
 
 def proteger_respuesta(respuesta: str) -> str:
-    return redactar_pii(respuesta)
+    respuesta = redactar_pii(respuesta)
+    if detectar_leakage_en_respuesta(respuesta):
+        logger.warning("Posible fuga de instrucciones detectada en la respuesta del LLM")
+        return (
+            "Lo siento, no puedo procesar esa solicitud. "
+            "Solo puedo ayudarte con consultas sobre el inventario de Unimarc."
+        )
+    return respuesta
 
 
 class GuardrailsMiddleware(BaseHTTPMiddleware):

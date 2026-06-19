@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from agent import AgentManager
-from guardrails import GuardrailsMiddleware, proteger_respuesta, redactar_pii
+from guardrails import GuardrailsMiddleware, proteger_respuesta, redactar_pii, sanitizar_prompt
 from metrics import metrics_collector
 from database import db
 from services.email import EmailService
@@ -34,6 +34,11 @@ class InventoryQueryRequest(BaseModel):
 class StockUpdateRequest(BaseModel):
     sku_or_name: str = Field(..., example="SKU-ARR-001")
     new_stock: int = Field(..., example=320)
+    nombre: Optional[str] = Field(None, example="Arroz Premium")
+    minimo: Optional[int] = Field(None, example=50)
+    maximo: Optional[int] = Field(None, example=500)
+    precio: Optional[float] = Field(None, example=3000.0)
+    proveedor: Optional[str] = Field(None, example="Distribuidora D")
 
 
 class OrderItem(BaseModel):
@@ -72,7 +77,7 @@ def get_inventory():
 
 @app.post("/inventory/query")
 def query_inventory(payload: InventoryQueryRequest):
-    pregunta_segura = redactar_pii(payload.question.strip())
+    pregunta_segura = sanitizar_prompt(payload.question.strip())
     import uuid, time
     request_id = str(uuid.uuid4())
     start = time.time()
@@ -116,21 +121,23 @@ def query_inventory(payload: InventoryQueryRequest):
 def update_stock(payload: StockUpdateRequest):
     import time
     start = time.time()
-    producto = manager.update_inventory_stock(payload.sku_or_name, payload.new_stock)
+    producto = manager.add_or_update_inventory(
+        sku_or_name=payload.sku_or_name,
+        new_stock=payload.new_stock,
+        nombre=payload.nombre,
+        minimo=payload.minimo,
+        maximo=payload.maximo,
+        precio=payload.precio,
+        proveedor=payload.proveedor,
+    )
+    created = producto.get("_created", False)
     duration_ms = int((time.time() - start) * 1000)
-    if not producto:
-        # registro de métrica de fallo
-        try:
-            metrics_collector.end_request(status_code=404, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error="Producto no encontrado", source="inventory/stock")
-        except Exception:
-            pass
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    # registro de éxito
+    status_code = 201 if created else 200
     try:
-        metrics_collector.end_request(status_code=200, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="inventory/stock")
+        metrics_collector.end_request(status_code=status_code, response_time_ms=duration_ms, tokens_in=0, tokens_out=0, error=None, source="inventory/stock")
     except Exception:
         pass
-    return {"success": True, "product": producto}
+    return {"success": True, "product": producto, "created": created}
 
 
 @app.get("/orders/pending")

@@ -67,5 +67,45 @@ class InventoryStore:
             return updated_product
         return None
 
+    def add_or_update_stock(
+        self,
+        sku_or_name: str,
+        new_stock: int,
+        nombre: Optional[str] = None,
+        minimo: Optional[int] = None,
+        maximo: Optional[int] = None,
+        precio: Optional[float] = None,
+        proveedor: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        productos = self.get_inventory()
+        query = sku_or_name.strip().lower()
+        for producto in productos:
+            if producto.get("sku", "").lower() == query or producto.get("nombre", "").lower() == query:
+                producto["stock"] = max(0, int(new_stock))
+                if minimo is not None:
+                    producto["minimo"] = minimo
+                if maximo is not None:
+                    producto["maximo"] = maximo
+                if precio is not None:
+                    producto["precio"] = precio
+                if proveedor is not None:
+                    producto["proveedor"] = proveedor
+                _write_json(INVENTARIO_FILE, {"productos": productos})
+                return producto
+        nuevo = {
+            "sku": sku_or_name.strip().upper() if "_" in sku_or_name else f"SKU-{sku_or_name.strip().upper().replace(' ', '-')[:6]}",
+            "nombre": nombre or sku_or_name.strip(),
+            "stock": max(0, int(new_stock)),
+            "minimo": minimo if minimo is not None else 0,
+            "maximo": maximo if maximo is not None else 9999,
+            "precio": precio if precio is not None else 0.0,
+            "proveedor": proveedor if proveedor is not None else "",
+        }
+        productos.append(nuevo)
+        _write_json(INVENTARIO_FILE, {"productos": productos})
+        result = dict(nuevo)
+        result["_created"] = True
+        return result
+
     def get_critical_products(self) -> List[Dict[str, Any]]:
         return [producto for producto in self.get_inventory() if producto.get("stock", 0) <= producto.get("minimo", 0)]

@@ -18,6 +18,26 @@ class AgentManager:
     def update_inventory_stock(self, sku_or_name: str, nuevo_stock: int):
         return self.inventory_store.update_stock(sku_or_name, nuevo_stock)
 
+    def add_or_update_inventory(
+        self,
+        sku_or_name: str,
+        new_stock: int,
+        nombre=None,
+        minimo=None,
+        maximo=None,
+        precio=None,
+        proveedor=None,
+    ):
+        return self.inventory_store.add_or_update_stock(
+            sku_or_name=sku_or_name,
+            new_stock=new_stock,
+            nombre=nombre,
+            minimo=minimo,
+            maximo=maximo,
+            precio=precio,
+            proveedor=proveedor,
+        )
+
     def list_inventory(self):
         return self.inventory_store.get_inventory()
 
